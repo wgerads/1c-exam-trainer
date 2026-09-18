@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1С:Профессионал — тренажёр вопросов</title>
+<meta name="description" content="Офлайн-тренажёр вопросов экзамена 1С:Профессионал: 958 вопросов по 14 темам, режим повторения и прогресс">
+<meta name="theme-color" content="#8a2c22">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-48.png" sizes="48x48" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="1С Тест">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app" class="app" aria-live="polite"></div>
+<noscript>Для работы тренажёра нужен включённый JavaScript.</noscript>
+<script>
+  // Офлайн-режим и установка на домашний экран доступны только на https:// или
+  // на localhost. При открытии файлом (file://) регистрация пропускается —
+  // приложение продолжает работать, просто без кэша.
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function (error) {
+        console.warn('Service worker не зарегистрирован:', error);
+      });
+    });
+  }
+</script>
+<script src="data/questions.js"></script>
+<script src="app-core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

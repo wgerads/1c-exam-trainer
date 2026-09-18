@@ -1,0 +1,260 @@
+/* Тренажёр 1С:Профессионал — оформление.
+   Палитра повторяет исходное приложение (тёмно-красный / зелёный ответ),
+   но интерфейс сделан читаемым и адаптивным. */
+
+:root {
+  --bg: #f4f1ee;
+  --surface: #ffffff;
+  --surface-2: #faf8f6;
+  --ink: #221c1a;
+  --ink-muted: #6f625d;
+  --line: #e2dbd6;
+  --brand: #8a2c22;
+  --brand-dark: #6f2219;
+  --brand-soft: #f6e7e3;
+  --ok: #2f8f4e;
+  --ok-soft: #e3f4e6;
+  --bad: #c94a4a;
+  --bad-soft: #fbe6e4;
+  --warn: #b07d1a;
+  --shadow: 0 1px 2px rgba(34, 28, 26, 0.06), 0 8px 24px rgba(34, 28, 26, 0.06);
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 "Segoe UI", "PT Sans", system-ui, -apple-system, Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+.app {
+  max-width: 860px;
+  margin: 0 auto;
+  /* env(safe-area-inset-*) отступает от «челки» и жестовой полосы телефона */
+  padding: calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right))
+    calc(48px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+}
+
+/* --- Мобильные мелочи --- */
+
+button,
+.option {
+  /* убирает задержку 300 мс и зум по двойному тапу */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { user-select: none; -webkit-user-select: none; }
+
+@media (display-mode: standalone) {
+  /* В установленном приложении шапка не перекрывается системной строкой */
+  .app { padding-top: calc(14px + env(safe-area-inset-top)); }
+}
+
+
+/* --- Общие элементы --- */
+
+h1, h2, h3 { margin: 0 0 8px; line-height: 1.25; }
+h1 { font-size: 26px; }
+h2 { font-size: 20px; }
+p { margin: 0 0 12px; }
+.muted { color: var(--ink-muted); font-size: 14px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.row.spread { justify-content: space-between; }
+.grow { flex: 1 1 auto; min-width: 0; }
+
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background .12s ease, border-color .12s ease, transform .06s ease;
+}
+button:hover { background: var(--surface-2); }
+button:active { transform: translateY(1px); }
+button:focus-visible { outline: 3px solid #c8a9a3; outline-offset: 2px; }
+
+button.primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+button.primary:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
+
+button.ghost { background: transparent; }
+button.small { padding: 6px 10px; font-size: 14px; }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge.known { background: var(--ok-soft); color: var(--ok); }
+.badge.error { background: var(--bad-soft); color: var(--bad); }
+.badge.untouched { background: #eee8e4; color: var(--ink-muted); }
+.badge.review { background: #fdf3dd; color: var(--warn); }
+
+/* --- Шапка --- */
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.top .brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.top .brand strong { font-size: 20px; }
+.top .brand span { color: var(--ink-muted); font-size: 14px; }
+
+/* --- Экран тем --- */
+
+.categories { display: grid; gap: 12px; }
+
+.category {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 16px;
+  align-items: center;
+}
+.category__title { font-weight: 600; }
+.category__meta { color: var(--ink-muted); font-size: 14px; }
+.category__actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+.bar {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: #ece5e1;
+  overflow: hidden;
+  grid-column: 1 / -1;
+}
+.bar > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--ok), #4cb54c);
+  width: 0;
+  transition: width .25s ease;
+}
+.bar.brand > i { background: linear-gradient(90deg, var(--brand), #b8543f); }
+
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--ink-muted); }
+.legend b { color: var(--ink); font-weight: 600; }
+
+/* --- Экран сессии --- */
+
+.session__head { position: sticky; top: 0; z-index: 5; padding: 10px 0 12px; background: var(--bg); }
+.session__meta { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--ink-muted); }
+
+.banner {
+  text-align: center;
+  font-weight: 700;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 14px 0;
+  display: none;
+}
+.banner.show { display: block; }
+.banner.ok { background: var(--ok-soft); color: var(--ok); }
+.banner.bad { background: var(--bad-soft); color: var(--bad); }
+
+.question { font-size: 19px; font-weight: 600; margin: 6px 0 4px; }
+.question__note { color: var(--ink-muted); font-size: 13px; margin-bottom: 10px; }
+
+.options { display: grid; gap: 10px; margin-top: 12px; }
+
+.option {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  line-height: 1.45;
+}
+.option__key {
+  flex: 0 0 auto;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #efe9e5;
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+.option__text { flex: 1 1 auto; }
+
+.option.is-correct { background: var(--ok-soft); border-color: var(--ok); }
+.option.is-correct .option__key { background: var(--ok); color: #fff; }
+.option.is-chosen-wrong { background: var(--bad-soft); border-color: var(--bad); }
+.option.is-chosen-wrong .option__key { background: var(--bad); color: #fff; }
+.option.is-picked { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
+.options.locked .option { cursor: default; }
+.options.locked .option:not(.is-correct):not(.is-chosen-wrong) { opacity: .62; }
+
+.session__foot { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
+
+/* --- Итоги --- */
+
+.summary__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 14px 0; }
+.stat { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.stat b { display: block; font-size: 24px; }
+
+/* --- Мелкое --- */
+
+.toolbar { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.empty { padding: 28px 16px; text-align: center; color: var(--ink-muted); }
+kbd {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.hidden { display: none !important; }
+
+@media (max-width: 620px) {
+  .app {
+    padding: calc(14px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right))
+      calc(40px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+  }
+  body { font-size: 17px; }
+  h1 { font-size: 22px; }
+  .question { font-size: 18px; }
+  .category { grid-template-columns: 1fr; }
+  .category__actions { justify-content: flex-start; }
+  .category__actions button { flex: 1 1 auto; }
+  .session__foot button { flex: 1 1 auto; }
+  .option { padding: 14px; }
+  button { padding: 12px 16px; }
+  .legend { gap: 8px; }
+}

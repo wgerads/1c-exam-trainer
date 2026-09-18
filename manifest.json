@@ -1,0 +1,21 @@
+{
+  "id": "1c-prof-trainer",
+  "name": "1С:Профессионал — тренажёр вопросов",
+  "short_name": "1С Тест",
+  "description": "Офлайн-тренажёр вопросов экзамена 1С:Профессионал: 958 вопросов по 14 темам, режим повторения и прогресс.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f4f1ee",
+  "theme_color": "#8a2c22",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
