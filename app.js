@@ -84,6 +84,7 @@
   // --- Подсказки и объяснения (data/explanations.js) ---
 
   const EXPLANATIONS = window.EXAM_EXPLANATIONS || {};
+  const GUIDES = window.EXAM_GUIDES || {};
 
   function explanationOf(question) {
     return EXPLANATIONS[question.id] || {};
@@ -247,6 +248,8 @@
           'Повторять',
         ),
         el('button', { class: 'small', onclick: () => renderBrowse(category.id) }, 'Просмотр'),
+        GUIDES[category.id] &&
+          el('button', { class: 'small', onclick: () => renderGuide(category.id) }, 'Разбор'),
         summary.errors > 0 &&
           el(
             'button',
@@ -708,6 +711,8 @@
           el('span', { text: 'просмотр вопросов' }),
         ]),
         el('div', { class: 'row' }, [
+          GUIDES[categoryId] &&
+            el('button', { class: 'small', onclick: () => renderGuide(categoryId) }, 'Разбор'),
           el('button', { class: 'small', onclick: () => { browse.active = false; startSession(categoryId, 'all'); } }, 'Повторять'),
           el('button', { class: 'ghost small', onclick: leaveBrowse, title: 'К списку тем (Esc)' }, 'Назад'),
         ]),
@@ -800,6 +805,33 @@
   function leaveBrowse() {
     browse.active = false;
     renderHome();
+  }
+
+  // --- Разбор темы (data/guides.js) ---
+  //
+  // Теория по теме: схема, таблицы, ловушки экзамена, шпаргалка. Текст
+  // статичный и собственный, поэтому вставляется как готовая разметка.
+  // Esc и «Назад» возвращают к списку тем (тот же флаг, что у просмотра).
+
+  function renderGuide(categoryId) {
+    const guide = GUIDES[categoryId];
+    if (!guide) return;
+    browse.active = true;
+    session.question = null;
+    clearRoot();
+    window.scrollTo(0, 0);
+
+    root.appendChild(
+      el('header', { class: 'top' }, [
+        el('div', { class: 'brand' }, [el('strong', { text: guide.title }), el('span', { text: 'разбор темы' })]),
+        el('div', { class: 'row' }, [
+          el('button', { class: 'small', onclick: () => renderBrowse(categoryId) }, 'Вопросы'),
+          el('button', { class: 'small', onclick: () => { browse.active = false; startSession(categoryId, 'all'); } }, 'Повторять'),
+          el('button', { class: 'ghost small', onclick: leaveBrowse, title: 'К списку тем (Esc)' }, 'Назад'),
+        ]),
+      ]),
+    );
+    root.appendChild(el('article', { class: 'card guide', html: guide.html }));
   }
 
   // --- Режим экзамена ---

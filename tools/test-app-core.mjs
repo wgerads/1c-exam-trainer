@@ -108,6 +108,20 @@ test('объяснения: ключи совпадают с id вопросов
   }
 });
 
+test('разборы тем: ключи совпадают с темами банка, есть заголовок и текст', () => {
+  const read = (file) => readFileSync(new URL(`../data/${file}`, import.meta.url), 'utf8');
+  const bank = read('questions.js');
+  const cats = new Set(JSON.parse(bank.slice(bank.indexOf('{'), bank.lastIndexOf('}') + 1)).categories.map((c) => c.id));
+  const sandbox = {};
+  new Function('window', read('guides.js'))(sandbox);
+  const entries = Object.entries(sandbox.EXAM_GUIDES);
+  assert.ok(entries.length > 0);
+  for (const [id, guide] of entries) {
+    assert.ok(cats.has(id), `нет темы ${id}`);
+    assert.ok(guide.title && guide.html.length > 1000, `пустой разбор: ${id}`);
+  }
+});
+
 test('formatTime', () => {
   assert.equal(Core.formatTime(0), '00:00');
   assert.equal(Core.formatTime(125), '02:05');
