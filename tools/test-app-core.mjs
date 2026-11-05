@@ -125,6 +125,19 @@ test('разборы тем: ключи совпадают с темами ба�
   }
 });
 
+test('избранное: переключение, без повторов, неизвестные id отбрасываются', () => {
+  let fav = [];
+  fav = Core.toggleFavorite(fav, 'a');
+  fav = Core.toggleFavorite(fav, 'b');
+  assert.deepEqual(fav, ['a', 'b']);
+  fav = Core.toggleFavorite(fav, 'a');
+  assert.deepEqual(fav, ['b']);
+  const known = new Map([['a', 1], ['b', 1]]);
+  assert.deepEqual(Core.normalizeFavorites(['a', 'a', 'zzz', 5, 'b'], known), ['a', 'b']);
+  assert.deepEqual(Core.normalizeFavorites({ favorites: ['b'] }), ['b']);
+  assert.deepEqual(Core.normalizeFavorites(null), []);
+});
+
 test('formatTime', () => {
   assert.equal(Core.formatTime(0), '00:00');
   assert.equal(Core.formatTime(125), '02:05');

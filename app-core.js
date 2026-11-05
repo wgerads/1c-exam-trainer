@@ -63,6 +63,25 @@
     return out;
   }
 
+  /** Избранное: массив id вопросов без повторов, только известные id (если список передан). */
+  function normalizeFavorites(raw, knownIds) {
+    const list = Array.isArray(raw) ? raw : raw && Array.isArray(raw.favorites) ? raw.favorites : [];
+    const out = [];
+    for (const id of list) {
+      if (typeof id !== 'string' || out.includes(id)) continue;
+      if (knownIds && !knownIds.has(id)) continue;
+      out.push(id);
+    }
+    return out;
+  }
+
+  /** Добавляет вопрос в избранное или убирает его оттуда. Возвращает новый список. */
+  function toggleFavorite(favorites, questionId) {
+    return favorites.includes(questionId)
+      ? favorites.filter((id) => id !== questionId)
+      : favorites.concat(questionId);
+  }
+
   function recordAnswer(progress, questionId, isCorrect, now) {
     const stamp = now || Date.now();
     const prev = progress.questions[questionId] || { seen: 0, correct: 0, wrong: 0, ok: false, last: 0 };
@@ -192,6 +211,8 @@
     shuffle,
     emptyProgress,
     normalizeProgress,
+    normalizeFavorites,
+    toggleFavorite,
     recordAnswer,
     statusOf,
     progressFor,

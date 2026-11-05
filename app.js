@@ -12,6 +12,8 @@
   const EXAM_KEY = 'exam1c.exam.current.v1'; // незавершённый экзамен (переживает перезагрузку)
   const EXAM_HISTORY_KEY = 'exam1c.exam.history.v1';
   const EXAM_HISTORY_LIMIT = 20;
+  const FAVORITES_KEY = 'exam1c.favorites.v1';
+  const FAVORITES_ID = '__favorites'; // «тема» из избранных вопросов для сессии и просмотра
 
   const root = document.getElementById('app');
   if (!Core || !DATA || !Array.isArray(DATA.questions)) {
@@ -49,6 +51,58 @@
     questionsByCategory.get(question.categoryId).push(question);
   }
   const categoryById = new Map((DATA.categories || []).map((c) => [c.id, c]));
+  categoryById.set(FAVORITES_ID, { id: FAVORITES_ID, title: 'Избранное' });
+  const questionById = new Map(DATA.questions.map((q) => [q.id, q]));
+
+  // --- избранное ---
+
+  function loadFavorites() {
+    try {
+      const raw = window.localStorage.getItem(FAVORITES_KEY);
+      return Core.normalizeFavorites(raw ? JSON.parse(raw) : [], questionById);
+    } catch (error) {
+      return [];
+    }
+  }
+  function saveFavorites() {
+    try {
+      window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+    } catch (error) {
+      storageAvailable = false;
+    }
+  }
+  let favorites = loadFavorites();
+
+  /** Вопросы темы или избранного (в порядке добавления). */
+  function questionsOf(categoryId) {
+    if (categoryId === FAVORITES_ID) return favorites.map((id) => questionById.get(id)).filter(Boolean);
+    return questionsByCategory.get(categoryId) || [];
+  }
+
+  function toggleFavorite(question) {
+    favorites = Core.toggleFavorite(favorites, question.id);
+    saveFavorites();
+    return favorites.includes(question.id);
+  }
+
+  /** Кнопка-звёздочка «в избранное» для карточки вопроса. */
+  function favoriteButton(question) {
+    const button = el('button', { type: 'button', class: 'fav-btn', dataset: { fav: question.id } });
+    const paint = (on) => {
+      button.classList.toggle('is-on', on);
+      button.textContent = on ? '★' : '☆';
+      button.setAttribute('aria-pressed', on ? 'true' : 'false');
+      const label = on ? 'Убрать из избранного' : 'В избранное';
+      button.setAttribute('aria-label', label);
+      button.title = label + ' (F)';
+    };
+    paint(favorites.includes(question.id));
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      paint(toggleFavorite(question));
+    });
+    return button;
+  }
 
   // --- утилиты DOM ---
 
@@ -232,6 +286,8 @@
 
     root.appendChild(renderExamCard());
 
+    root.appendChild(renderFavoritesCard());
+
     root.appendChild(el('h2', { class: 'section-title', text: 'Темы' }));
     const list = el('div', { class: 'categories' });
     for (const category of DATA.categories || []) {
@@ -288,7 +344,7 @@
       renderHome();
     };
     const exportProgress = () => {
-      const blob = new Blob([JSON.stringify(progress, null, 2)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify({ ...progress, favorites }, null, 2)], { type: 'application/json' });
       const link = el('a', { href: URL.createObjectURL(blob), download: 'progress-1c-trainer.json' });
       document.body.appendChild(link);
       link.click();
@@ -302,8 +358,13 @@
         const reader = new FileReader();
         reader.onload = () => {
           try {
-            progress = Core.normalizeProgress(JSON.parse(String(reader.result)));
+            const parsed = JSON.parse(String(reader.result));
+            progress = Core.normalizeProgress(parsed);
             saveProgress(progress);
+            if (parsed && Array.isArray(parsed.favorites)) {
+              favorites = Core.normalizeFavorites(parsed.favorites, questionById);
+              saveFavorites();
+            }
             renderHome();
           } catch (error) {
             window.alert('Не удалось прочитать файл прогресса.');
@@ -341,6 +402,30 @@
     );
   }
 
+  function renderFavoritesCard() {
+    const list = questionsOf(FAVORITES_ID);
+    const count = list.length;
+    const summary = Core.progressFor(list, progress);
+    return el('div', { class: 'card category favorites-card' }, [
+      el('div', {}, [
+        el('div', { class: 'category__title' }, [el('span', { class: 'fav-star', 'aria-hidden': 'true', text: '★ ' }), 'Избранное']),
+        el('div', { class: 'category__meta' }, [
+          count
+            ? `${count} ${plural(count, 'вопрос', 'вопроса', 'вопросов')} из разных тем` +
+                (summary.errors > 0 ? ` · ошибок ${summary.errors}` : '')
+            : 'Пока пусто. Отмечайте трудные вопросы звёздочкой ☆ в тренировке, просмотре или разборе экзамена.',
+        ]),
+      ]),
+      count > 0 &&
+        el('div', { class: 'category__actions' }, [
+          el('button', { class: 'primary small', onclick: () => startSession(FAVORITES_ID, 'all') }, 'Повторять'),
+          el('button', { class: 'small', onclick: () => renderBrowse(FAVORITES_ID) }, 'Просмотр'),
+          summary.errors > 0 &&
+            el('button', { class: 'small', onclick: () => startSession(FAVORITES_ID, 'errors') }, `Ошибки ${summary.errors}`),
+        ]),
+    ]);
+  }
+
   function DataTotals() {
     return Core.progressFor(DATA.questions, progress);
   }
@@ -348,10 +433,16 @@
   // --- Экран: сессия ---
 
   function startSession(categoryId, mode) {
-    const all = questionsByCategory.get(categoryId) || [];
+    const all = questionsOf(categoryId);
     const queue = Core.buildQueue(all, progress, mode);
     if (!queue.length) {
-      window.alert(mode === 'errors' ? 'В этой теме пока нет вопросов с ошибками.' : 'В этой теме нет вопросов.');
+      window.alert(
+        mode === 'errors'
+          ? 'Здесь пока нет вопросов с ошибками.'
+          : categoryId === FAVORITES_ID
+            ? 'В избранном пока нет вопросов.'
+            : 'В этой теме нет вопросов.',
+      );
       return;
     }
     session.categoryId = categoryId;
@@ -409,7 +500,12 @@
     root.appendChild(banner);
 
     const card = el('div', { class: 'card' }, []);
-    card.appendChild(el('div', { class: 'question', text: question.text }));
+    card.appendChild(
+      el('div', { class: 'question__head' }, [
+        el('div', { class: 'question', text: question.text }),
+        favoriteButton(question),
+      ]),
+    );
     const figure = questionImage(question);
     if (figure) card.appendChild(figure);
     const notes = [];
@@ -606,6 +702,14 @@
       }
       return;
     }
+    if (['f', 'F', 'а', 'А'].includes(event.key)) {
+      const star = root.querySelector('.fav-btn');
+      if (star) {
+        event.preventDefault();
+        star.click();
+      }
+      return;
+    }
     if (['h', 'H', 'р', 'Р'].includes(event.key)) {
       const hintButton = document.getElementById('hint-btn');
       if (hintButton) {
@@ -665,10 +769,10 @@
     ]);
     root.appendChild(card);
 
-    const summary = Core.progressFor(questionsByCategory.get(session.categoryId) || [], progress);
+    const summary = Core.progressFor(questionsOf(session.categoryId), progress);
     root.appendChild(
       el('p', { class: 'muted', style: 'margin-top:12px' }, [
-        `В теме «${categoryTitle()}» изучено ${summary.known} из ${summary.total} (${summary.percent}%), с ошибками ${summary.errors}.`,
+        `${session.categoryId === FAVORITES_ID ? 'В избранном' : `В теме «${categoryTitle()}»`} изучено ${summary.known} из ${summary.total} (${summary.percent}%), с ошибками ${summary.errors}.`,
       ]),
     );
 
@@ -702,7 +806,7 @@
     window.scrollTo(0, 0);
 
     const category = categoryById.get(categoryId);
-    const questions = questionsByCategory.get(categoryId) || [];
+    const questions = questionsOf(categoryId);
 
     root.appendChild(
       el('header', { class: 'top' }, [
@@ -757,7 +861,12 @@
 
       list.textContent = '';
       if (!shown.length) {
-        list.appendChild(el('div', { class: 'card empty', text: 'Ничего не найдено.' }));
+        list.appendChild(
+          el('div', {
+            class: 'card empty',
+            text: questions.length ? 'Ничего не найдено.' : 'В избранном пока нет вопросов.',
+          }),
+        );
         return;
       }
       for (const question of shown) {
@@ -776,9 +885,16 @@
         list.appendChild(
           el('div', { class: 'card' }, [
             el('div', { class: 'row spread' }, [
-              el('div', { class: 'question__note', style: 'margin:0', text: `Вопрос ${number}` }),
-              status === 'known' && el('span', { class: 'pill ok', text: 'Изучен' }),
-              status === 'error' && el('span', { class: 'pill bad', text: 'С ошибкой' }),
+              el('div', {
+                class: 'question__note',
+                style: 'margin:0',
+                text: categoryId === FAVORITES_ID ? question.categoryTitle : `Вопрос ${number}`,
+              }),
+              el('div', { class: 'row' }, [
+                status === 'known' && el('span', { class: 'pill ok', text: 'Изучен' }),
+                status === 'error' && el('span', { class: 'pill bad', text: 'С ошибкой' }),
+                favoriteButton(question),
+              ]),
             ]),
             el('div', { class: 'question', text: question.text }),
             questionImage(question),
@@ -839,8 +955,6 @@
   // Как на настоящем тестировании: билет из 14 вопросов (по одному из каждой
   // темы), 30 минут, зачёт от 12 верных. Правильные ответы во время экзамена
   // не показываются; между вопросами можно свободно переходить и менять ответ.
-
-  const questionById = new Map(DATA.questions.map((q) => [q.id, q]));
 
   const exam = {
     active: false,
@@ -1249,7 +1363,10 @@
         el('div', { class: 'card' }, [
           el('div', { class: 'row spread' }, [
             el('div', { class: 'question__note', style: 'margin:0', text: `${i + 1}. ${question.categoryTitle}` }),
-            el('span', { class: `pill ${item.ok ? 'ok' : 'bad'}`, text: status }),
+            el('div', { class: 'row' }, [
+              el('span', { class: `pill ${item.ok ? 'ok' : 'bad'}`, text: status }),
+              favoriteButton(question),
+            ]),
           ]),
           el('div', { class: 'question', text: question.text }),
           questionImage(question),
