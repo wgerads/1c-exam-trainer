@@ -226,6 +226,70 @@ button.small { padding: 6px 10px; font-size: 14px; }
 .stat { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
 .stat b { display: block; font-size: 24px; }
 
+/* --- Картинки к вопросам --- */
+
+.question__figure {
+  display: block;
+  margin: 10px 0 4px;
+  padding: 6px;
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: zoom-in;
+  line-height: 0;
+}
+.question__figure:hover { border-color: var(--brand); }
+.question__image { display: block; max-width: 100%; height: auto; }
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  background: rgba(20, 16, 15, 0.86);
+  cursor: zoom-out;
+}
+.lightbox img {
+  max-width: 100%;
+  max-height: calc(100% - 40px);
+  height: auto;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 6px;
+  image-rendering: auto;
+}
+.lightbox__hint { color: #ddd; font-size: 13px; }
+
+/* --- Просмотр вопросов --- */
+
+.browse__tools {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  gap: 8px;
+  padding: 8px 0 12px;
+  background: var(--bg);
+}
+.browse__search {
+  width: 100%;
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.browse__search:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+.browse__toggle { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; cursor: pointer; }
+.browse__toggle input { accent-color: var(--brand); width: 16px; height: 16px; margin: 0; }
+
 /* --- Режим экзамена --- */
 
 .exam-card { margin-bottom: 16px; border-color: var(--brand); }

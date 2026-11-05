@@ -72,7 +72,67 @@
   }
 
   function clearRoot() {
+    closeLightbox();
     root.textContent = '';
+  }
+
+  // --- Картинки к вопросам ---
+  //
+  // Картинки вырезаны со скриншотов тренажёра и довольно мелкие, поэтому по
+  // нажатию открываются увеличенными поверх страницы (Esc или клик — закрыть).
+
+  let lightbox = null;
+
+  function questionImage(question) {
+    const image = question.image;
+    if (!image || !image.src) return null;
+    const img = el('img', {
+      class: 'question__image',
+      src: image.src,
+      width: image.w,
+      height: image.h,
+      alt: 'Иллюстрация к вопросу',
+      loading: 'lazy',
+      decoding: 'async',
+    });
+    return el(
+      'button',
+      {
+        type: 'button',
+        class: 'question__figure',
+        title: 'Открыть картинку крупно',
+        'aria-label': 'Открыть картинку крупно',
+        onclick: (event) => {
+          event.stopPropagation();
+          openLightbox(image);
+        },
+      },
+      [img],
+    );
+  }
+
+  function openLightbox(image) {
+    closeLightbox();
+    // Увеличиваем мелкие картинки, но не больше экрана.
+    const scale = Math.min(3, Math.max(1, 900 / image.w));
+    lightbox = el(
+      'div',
+      { class: 'lightbox', role: 'dialog', 'aria-label': 'Картинка к вопросу', onclick: closeLightbox },
+      [
+        el('img', {
+          src: image.src,
+          alt: 'Иллюстрация к вопросу',
+          style: `width:${Math.round(image.w * scale)}px`,
+        }),
+        el('span', { class: 'lightbox__hint', text: 'Нажмите или Esc, чтобы закрыть' }),
+      ],
+    );
+    document.body.appendChild(lightbox);
+  }
+
+  function closeLightbox() {
+    if (lightbox) lightbox.remove();
+    lightbox = null;
   }
 
   function plural(n, one, few, many) {
@@ -147,6 +207,7 @@
           },
           'Повторять',
         ),
+        el('button', { class: 'small', onclick: () => renderBrowse(category.id) }, 'Просмотр'),
         summary.errors > 0 &&
           el(
             'button',
@@ -307,6 +368,8 @@
 
     const card = el('div', { class: 'card' }, []);
     card.appendChild(el('div', { class: 'question', text: question.text }));
+    const figure = questionImage(question);
+    if (figure) card.appendChild(figure);
     const notes = [];
     if (question.questionTruncated) notes.push('в кадре текст вопроса был обрезан');
     if (question.needsReview) notes.push('помечен для проверки');
@@ -443,8 +506,19 @@
   }
 
   function onKeyDown(event) {
+    if (lightbox) {
+      if (event.key === 'Escape' || event.key === 'Enter') {
+        event.preventDefault();
+        closeLightbox();
+      }
+      return;
+    }
     if (exam.active) {
       onExamKeyDown(event);
+      return;
+    }
+    if (browse.active) {
+      if (event.key === 'Escape') leaveBrowse();
       return;
     }
     if (!session.question || !root.querySelector('.options')) return;
@@ -527,6 +601,129 @@
       el('button', { class: 'ghost', onclick: renderHome }, 'К списку тем'),
     ]);
     root.appendChild(foot);
+  }
+
+  // --- Просмотр вопросов темы ---
+  //
+  // Все вопросы темы списком, правильный ответ сразу выделен. Без проверки
+  // и без записи в прогресс — просто читать. Есть поиск по тексту вопроса
+  // и вариантов и режим «только правильные ответы».
+
+  const browse = { active: false, categoryId: null, query: '', onlyCorrect: false };
+
+  function normalizeSearch(text) {
+    return String(text || '').toLowerCase().replace(/ё/g, 'е');
+  }
+
+  function renderBrowse(categoryId) {
+    browse.active = true;
+    browse.categoryId = categoryId;
+    browse.query = '';
+    session.question = null;
+    clearRoot();
+    window.scrollTo(0, 0);
+
+    const category = categoryById.get(categoryId);
+    const questions = questionsByCategory.get(categoryId) || [];
+
+    root.appendChild(
+      el('header', { class: 'top' }, [
+        el('div', { class: 'brand' }, [
+          el('strong', { text: category ? category.title : categoryId }),
+          el('span', { text: 'просмотр вопросов' }),
+        ]),
+        el('div', { class: 'row' }, [
+          el('button', { class: 'small', onclick: () => { browse.active = false; startSession(categoryId, 'all'); } }, 'Повторять'),
+          el('button', { class: 'ghost small', onclick: leaveBrowse, title: 'К списку тем (Esc)' }, 'Назад'),
+        ]),
+      ]),
+    );
+
+    const search = el('input', {
+      type: 'search',
+      class: 'browse__search',
+      placeholder: 'Поиск по вопросам и ответам',
+      'aria-label': 'Поиск по вопросам и ответам',
+      autocomplete: 'off',
+    });
+    const onlyCorrect = el('input', { type: 'checkbox', id: 'browse-only-correct' });
+    onlyCorrect.checked = browse.onlyCorrect;
+    const counter = el('span', { class: 'muted' });
+
+    root.appendChild(
+      el('div', { class: 'browse__tools' }, [
+        search,
+        el('div', { class: 'row spread' }, [
+          el('label', { class: 'browse__toggle', for: 'browse-only-correct' }, [onlyCorrect, ' Только правильные ответы']),
+          counter,
+        ]),
+      ]),
+    );
+
+    const list = el('div', { class: 'categories' });
+    root.appendChild(list);
+
+    function draw() {
+      const query = normalizeSearch(browse.query.trim());
+      const shown = questions.filter(
+        (q) =>
+          !query ||
+          normalizeSearch(q.text).includes(query) ||
+          q.options.some((o) => normalizeSearch(o.text).includes(query)),
+      );
+      counter.textContent = query
+        ? `Найдено ${shown.length} из ${questions.length}`
+        : `${questions.length} ${plural(questions.length, 'вопрос', 'вопроса', 'вопросов')}`;
+
+      list.textContent = '';
+      if (!shown.length) {
+        list.appendChild(el('div', { class: 'card empty', text: 'Ничего не найдено.' }));
+        return;
+      }
+      for (const question of shown) {
+        const status = Core.statusOf(question, progress);
+        const options = el('div', { class: 'options locked' });
+        question.options.forEach((option, index) => {
+          if (browse.onlyCorrect && !option.correct) return;
+          options.appendChild(
+            el('div', { class: `option${option.correct ? ' is-correct' : ''}` }, [
+              el('span', { class: 'option__key', text: String(index + 1) }),
+              el('span', { class: 'option__text', text: option.text }),
+            ]),
+          );
+        });
+        const number = questions.indexOf(question) + 1;
+        list.appendChild(
+          el('div', { class: 'card' }, [
+            el('div', { class: 'row spread' }, [
+              el('div', { class: 'question__note', style: 'margin:0', text: `Вопрос ${number}` }),
+              status === 'known' && el('span', { class: 'pill ok', text: 'Изучен' }),
+              status === 'error' && el('span', { class: 'pill bad', text: 'С ошибкой' }),
+            ]),
+            el('div', { class: 'question', text: question.text }),
+      questionImage(question),
+            question.needsReview &&
+              el('div', { class: 'question__note', text: '(помечен для проверки: формулировка могла распознаться не полностью)' }),
+            options,
+          ]),
+        );
+      }
+    }
+
+    search.addEventListener('input', () => {
+      browse.query = search.value;
+      draw();
+    });
+    onlyCorrect.addEventListener('change', () => {
+      browse.onlyCorrect = onlyCorrect.checked;
+      draw();
+    });
+    draw();
+  }
+
+  function leaveBrowse() {
+    browse.active = false;
+    renderHome();
   }
 
   // --- Режим экзамена ---
@@ -771,6 +968,7 @@
     const card = el('div', { class: 'card' }, [
       el('div', { class: 'question__note', text: question.categoryTitle }),
       el('div', { class: 'question', text: question.text }),
+      questionImage(question),
       question.multi &&
         el('div', { class: 'question__note', text: 'Несколько правильных вариантов — отметьте все.' }),
     ]);
@@ -946,6 +1144,7 @@
             el('span', { class: `pill ${item.ok ? 'ok' : 'bad'}`, text: status }),
           ]),
           el('div', { class: 'question', text: question.text }),
+      questionImage(question),
           options,
         ]),
       );

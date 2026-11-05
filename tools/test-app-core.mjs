@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 const require = createRequire(import.meta.url);
 const Core = require('../app-core.js');
@@ -52,7 +52,7 @@ test('buildExam: по одному вопросу из каждой темы, в
   assert.deepEqual(ticket.map((x) => x.id.slice(0, 2)), ['c1', 'c2', 'c3']);
 });
 
-test('buildExam: вопросы с картинками не попадают в билет, если есть замена', () => {
+test('buildExam: вопросы без нужной картинки не попадают в билет, если есть замена', () => {
   const categories = [{ id: 'c1' }, { id: 'c2' }];
   const byCategory = {
     c1: [q('pic', [0], { text: 'Что показано на рисунке?' }), q('plain', [0])],
@@ -63,6 +63,15 @@ test('buildExam: вопросы с картинками не попадают в
     assert.equal(ticket[0].id, 'plain');
     assert.equal(ticket[1].id, 'only-pic'); // других вопросов в теме нет — берём что есть
   }
+});
+
+test('needsImage: вопрос с картинкой допускается, без картинки — нет', () => {
+  assert.equal(Core.needsImage(q('a', [0], { text: 'Что показано на рисунке?' })), true);
+  assert.equal(
+    Core.needsImage(q('b', [0], { text: 'Что показано на рисунке?', image: { src: 'images/questions/b.webp', w: 10, h: 10 } })),
+    false,
+  );
+  assert.equal(Core.needsImage(q('c', [0], { text: 'Изменить размер картинки в окне редактора картинок:' })), false);
 });
 
 test('gradeExam: 12 из 14 — сдано, 11 — нет, пропуск = ошибка', () => {
@@ -92,7 +101,7 @@ test('formatTime', () => {
   assert.equal(Core.formatTime(-5), '00:00');
 });
 
-test('банк вопросов: у каждого вопроса есть правильный ответ, экзамен собирается на 14 тем', () => {
+test('банк вопросов: правильные ответы, картинки на месте, экзамен собирается на 14 тем', () => {
   const source = readFileSync(new URL('../data/questions.js', import.meta.url), 'utf8');
   const data = JSON.parse(source.slice(source.indexOf('{'), source.lastIndexOf('}') + 1));
   for (const question of data.questions) {
@@ -102,6 +111,12 @@ test('банк вопросов: у каждого вопроса есть пр�
   for (const question of data.questions) {
     if (!byCategory.has(question.categoryId)) byCategory.set(question.categoryId, []);
     byCategory.get(question.categoryId).push(question);
+  }
+  for (const question of data.questions) {
+    assert.ok(!Core.needsImage(question), `вопрос ссылается на рисунок, но картинки нет: ${question.id}`);
+    if (question.image) {
+      assert.ok(existsSync(new URL(`../${question.image.src}`, import.meta.url)), `нет файла ${question.image.src}`);
+    }
   }
   const ticket = Core.buildExam(data.categories, byCategory, seeded(42));
   assert.equal(ticket.length, Core.EXAM.questionCount);

@@ -127,9 +127,13 @@
    */
   const EXAM = { durationSec: 30 * 60, passScore: 12, questionCount: 14 };
 
-  /** Вопрос ссылается на картинку, которой нет в банке, — на экзамене его не даём. */
+  /**
+   * Вопрос ссылается на рисунок, а картинки к нему в банке нет — на экзамене его не даём.
+   * Вопросы, где слово «картинка» — просто часть темы («редактор картинок»), сюда не попадают.
+   */
   function needsImage(question) {
-    return /рисун|картинк/i.test(question.text || '');
+    if (question.image && question.image.src) return false;
+    return /на рисунке|на картинке|рисунком/i.test(question.text || '');
   }
 
   /**

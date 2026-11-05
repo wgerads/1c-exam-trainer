@@ -18,14 +18,15 @@ window.EXAM_DATA = {
   "answerNotShown": 0,
   "droppedEmptyText": 1,
   "needsReview": 32,
-  "modelDisagreements": 1
+  "modelDisagreements": 1,
+  "questionsWithImages": 75
  },
  "categories": [
   {
    "id": "set-1",
    "title": "Общие механизмы",
-   "questions": 86,
-   "shown": 86,
+   "questions": 77,
+   "shown": 77,
    "restored": 0,
    "noAnswer": 0,
    "needsReview": 6,
@@ -35,8 +36,8 @@ window.EXAM_DATA = {
   {
    "id": "set-2",
    "title": "Редактор и инструменты общие",
-   "questions": 59,
-   "shown": 59,
+   "questions": 68,
+   "shown": 68,
    "restored": 0,
    "noAnswer": 0,
    "needsReview": 1,
@@ -4975,572 +4976,6 @@ window.EXAM_DATA = {
    }
   },
   {
-   "id": "set-1-q078",
-   "categoryId": "set-1",
-   "categoryTitle": "Общие механизмы",
-   "orderInCategory": 79,
-   "index": 60,
-   "total": 68,
-   "text": "Режим сравнения файлов в конфигураторе работает со следующими типами файлов:",
-   "questionTruncated": false,
-   "options": [
-    {
-     "id": "a",
-     "text": "Текстовые и табличные",
-     "correct": false
-    },
-    {
-     "id": "b",
-     "text": "Текстовые",
-     "correct": false
-    },
-    {
-     "id": "c",
-     "text": "Текстовые, табличные, бинарные файлы, внешние отчеты и обработки, файлы конфигураций",
-     "correct": false
-    },
-    {
-     "id": "d",
-     "text": "Текстовые, табличные, бинарные файлы, внешние отчеты и обработки",
-     "correct": true
-    },
-    {
-     "id": "e",
-     "text": "Текстовые, табличные, бинарные файлы",
-     "correct": false
-    }
-   ],
-   "multi": false,
-   "answerState": "shown",
-   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-09-35_bd0b048a0423af58ed17dda131ce6cd3.jpg",
-   "duplicateGroupId": null,
-   "sourceImages": [
-    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-09-35_bd0b048a0423af58ed17dda131ce6cd3.jpg"
-   ],
-   "confidence": 0.96,
-   "needsReview": false,
-   "layoutNote": "",
-   "verified": {
-    "pixelCheck": "match",
-    "modelGreen": [
-     3
-    ],
-    "pixelGreen": [
-     3
-    ],
-    "answerFromOtherCategory": false,
-    "optionCountPixels": 5,
-    "partialOptionsPixels": 0,
-    "droppedEmptyOptions": 0,
-    "emptyOptionInside": false,
-    "banner": "correct",
-    "flags": [],
-    "mergedFrames": 1
-   }
-  },
-  {
-   "id": "set-1-q079",
-   "categoryId": "set-1",
-   "categoryTitle": "Общие механизмы",
-   "orderInCategory": 80,
-   "index": 61,
-   "total": 68,
-   "text": "Режим сравнения файлов в 1С:Предприятие работает со следующими типами файлов:",
-   "questionTruncated": false,
-   "options": [
-    {
-     "id": "a",
-     "text": "Текстовые",
-     "correct": false
-    },
-    {
-     "id": "b",
-     "text": "Текстовые, табличные, бинарные файлы",
-     "correct": true
-    },
-    {
-     "id": "c",
-     "text": "Текстовые, табличные, бинарные файлы, внешние отчеты и обработки, файлы конфигураций",
-     "correct": false
-    },
-    {
-     "id": "d",
-     "text": "Текстовые, табличные, бинарные файлы, внешние отчеты и обработки",
-     "correct": false
-    },
-    {
-     "id": "e",
-     "text": "Текстовые и табличные",
-     "correct": false
-    }
-   ],
-   "multi": false,
-   "answerState": "shown",
-   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-17-73_bd0b048a0423af58ed17dda131ce6cd3.jpg",
-   "duplicateGroupId": null,
-   "sourceImages": [
-    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-17-73_bd0b048a0423af58ed17dda131ce6cd3.jpg"
-   ],
-   "confidence": 0.96,
-   "needsReview": false,
-   "layoutNote": "",
-   "verified": {
-    "pixelCheck": "match",
-    "modelGreen": [
-     1
-    ],
-    "pixelGreen": [
-     1
-    ],
-    "answerFromOtherCategory": false,
-    "optionCountPixels": 5,
-    "partialOptionsPixels": 0,
-    "droppedEmptyOptions": 0,
-    "emptyOptionInside": false,
-    "banner": "correct",
-    "flags": [],
-    "mergedFrames": 1
-   }
-  },
-  {
-   "id": "set-1-q080",
-   "categoryId": "set-1",
-   "categoryTitle": "Общие механизмы",
-   "orderInCategory": 81,
-   "index": 62,
-   "total": 68,
-   "text": "Режим временной блокировки предназначен для:",
-   "questionTruncated": false,
-   "options": [
-    {
-     "id": "a",
-     "text": "Предотвращения несанкционированного использования системы 1С:Предприятие в отсутствие пользователя",
-     "correct": true
-    },
-    {
-     "id": "b",
-     "text": "Для временной блокировки объекта информационной базы для использования другими пользователями",
-     "correct": false
-    },
-    {
-     "id": "c",
-     "text": "Блокировки подключений пользователей к информационной базе",
-     "correct": false
-    }
-   ],
-   "multi": false,
-   "answerState": "shown",
-   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-23-03_bd0b048a0423af58ed17dda131ce6cd3.jpg",
-   "duplicateGroupId": null,
-   "sourceImages": [
-    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-23-03_bd0b048a0423af58ed17dda131ce6cd3.jpg"
-   ],
-   "confidence": 0.97,
-   "needsReview": false,
-   "layoutNote": "",
-   "verified": {
-    "pixelCheck": "match",
-    "modelGreen": [
-     0
-    ],
-    "pixelGreen": [
-     0
-    ],
-    "answerFromOtherCategory": false,
-    "optionCountPixels": 3,
-    "partialOptionsPixels": 0,
-    "droppedEmptyOptions": 0,
-    "emptyOptionInside": false,
-    "banner": "correct",
-    "flags": [],
-    "mergedFrames": 1
-   }
-  },
-  {
-   "id": "set-1-q081",
-   "categoryId": "set-1",
-   "categoryTitle": "Общие механизмы",
-   "orderInCategory": 82,
-   "index": 63,
-   "total": 68,
-   "text": "Режим временной блокировки может использоваться:",
-   "questionTruncated": false,
-   "options": [
-    {
-     "id": "a",
-     "text": "В режиме конфигуратора",
-     "correct": false
-    },
-    {
-     "id": "b",
-     "text": "В режиме толстого клиента 1С:Предприятия",
-     "correct": false
-    },
-    {
-     "id": "c",
-     "text": "В режиме тонкого клиента 1С:Предприятия",
-     "correct": false
-    },
-    {
-     "id": "d",
-     "text": "Варианты 1 и 2",
-     "correct": true
-    },
-    {
-     "id": "e",
-     "text": "Верны все варианты",
-     "correct": false
-    }
-   ],
-   "multi": false,
-   "answerState": "shown",
-   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-29-70_bd0b048a0423af58ed17dda131ce6cd3.jpg",
-   "duplicateGroupId": null,
-   "sourceImages": [
-    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-29-70_bd0b048a0423af58ed17dda131ce6cd3.jpg"
-   ],
-   "confidence": 0.97,
-   "needsReview": false,
-   "layoutNote": "",
-   "verified": {
-    "pixelCheck": "match",
-    "modelGreen": [
-     3
-    ],
-    "pixelGreen": [
-     3
-    ],
-    "answerFromOtherCategory": false,
-    "optionCountPixels": 5,
-    "partialOptionsPixels": 0,
-    "droppedEmptyOptions": 0,
-    "emptyOptionInside": false,
-    "banner": "correct",
-    "flags": [],
-    "mergedFrames": 1
-   }
-  },
-  {
-   "id": "set-1-q082",
-   "categoryId": "set-1",
-   "categoryTitle": "Общие механизмы",
-   "orderInCategory": 83,
-   "index": 64,
-   "total": 68,
-   "text": "Режим установки параметров предназначен для настройки:",
-   "questionTruncated": false,
-   "options": [
-    {
-     "id": "a",
-     "text": "Режима работы конфигуратора",
-     "correct": false
-    },
-    {
-     "id": "b",
-     "text": "Режима работы 1С:Предприятия",
-     "correct": false
-    },
-    {
-     "id": "c",
-     "text": "Панели инструментов главного меню",
-     "correct": false
-    },
-    {
-     "id": "d",
-     "text": "Варианты 1 и 2",
-     "correct": true
-    },
-    {
-     "id": "e",
-     "text": "Верны все варианты",
-     "correct": false
-    }
-   ],
-   "multi": false,
-   "answerState": "shown",
-   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-37-24_bd0b048a0423af58ed17dda131ce6cd3.jpg",
-   "duplicateGroupId": null,
-   "sourceImages": [
-    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-37-24_bd0b048a0423af58ed17dda131ce6cd3.jpg"
-   ],
-   "confidence": 0.96,
-   "needsReview": false,
-   "layoutNote": "",
-   "verified": {
-    "pixelCheck": "match",
-    "modelGreen": [
-     3
-    ],
-    "pixelGreen": [
-     3
-    ],
-    "answerFromOtherCategory": false,
-    "optionCountPixels": 5,
-    "partialOptionsPixels": 0,
-    "droppedEmptyOptions": 0,
-    "emptyOptionInside": false,
-    "banner": "correct",
-    "flags": [],
-    "mergedFrames": 1
-   }
-  },
-  {
-   "id": "set-1-q083",
-   "categoryId": "set-1",
-   "categoryTitle": "Общие механизмы",
-   "orderInCategory": 84,
-   "index": 65,
-   "total": 68,
-   "text": "Режим \"Сервис/Параметры\" определяет параметры для:",
-   "questionTruncated": false,
-   "options": [
-    {
-     "id": "a",
-     "text": "Для прикладного решения",
-     "correct": false
-    },
-    {
-     "id": "b",
-     "text": "Для пользователя",
-     "correct": false
-    },
-    {
-     "id": "c",
-     "text": "Для сеанса",
-     "correct": false
-    },
-    {
-     "id": "d",
-     "text": "Варианты 2 и 3",
-     "correct": false
-    },
-    {
-     "id": "e",
-     "text": "Верны все варианты",
-     "correct": true
-    }
-   ],
-   "multi": false,
-   "answerState": "shown",
-   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-41-80_bd0b048a0423af58ed17dda131ce6cd3.jpg",
-   "duplicateGroupId": null,
-   "sourceImages": [
-    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-41-80_bd0b048a0423af58ed17dda131ce6cd3.jpg"
-   ],
-   "confidence": 0.97,
-   "needsReview": false,
-   "layoutNote": "",
-   "verified": {
-    "pixelCheck": "match",
-    "modelGreen": [
-     4
-    ],
-    "pixelGreen": [
-     4
-    ],
-    "answerFromOtherCategory": false,
-    "optionCountPixels": 5,
-    "partialOptionsPixels": 0,
-    "droppedEmptyOptions": 0,
-    "emptyOptionInside": false,
-    "banner": "correct",
-    "flags": [],
-    "mergedFrames": 1
-   }
-  },
-  {
-   "id": "set-1-q084",
-   "categoryId": "set-1",
-   "categoryTitle": "Общие механизмы",
-   "orderInCategory": 85,
-   "index": 66,
-   "total": 68,
-   "text": "Режим сохранения печатных форм предназначен для сохранения:",
-   "questionTruncated": false,
-   "options": [
-    {
-     "id": "a",
-     "text": "Диалоговой формы ввода данных в виде картинки",
-     "correct": false
-    },
-    {
-     "id": "b",
-     "text": "Данных табличного поля в виде файла",
-     "correct": false
-    },
-    {
-     "id": "c",
-     "text": "Данных табличного или текстового документа в виде файла",
-     "correct": true
-    },
-    {
-     "id": "d",
-     "text": "Варианты 1 и 2",
-     "correct": false
-    },
-    {
-     "id": "e",
-     "text": "Верны все варианты",
-     "correct": false
-    }
-   ],
-   "multi": false,
-   "answerState": "shown",
-   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-48-50_bd0b048a0423af58ed17dda131ce6cd3.jpg",
-   "duplicateGroupId": null,
-   "sourceImages": [
-    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-48-50_bd0b048a0423af58ed17dda131ce6cd3.jpg"
-   ],
-   "confidence": 0.97,
-   "needsReview": false,
-   "layoutNote": "",
-   "verified": {
-    "pixelCheck": "match",
-    "modelGreen": [
-     2
-    ],
-    "pixelGreen": [
-     2
-    ],
-    "answerFromOtherCategory": false,
-    "optionCountPixels": 5,
-    "partialOptionsPixels": 0,
-    "droppedEmptyOptions": 0,
-    "emptyOptionInside": false,
-    "banner": "correct",
-    "flags": [],
-    "mergedFrames": 1
-   }
-  },
-  {
-   "id": "set-1-q085",
-   "categoryId": "set-1",
-   "categoryTitle": "Общие механизмы",
-   "orderInCategory": 86,
-   "index": 67,
-   "total": 68,
-   "text": "Режим сохранения печатных форм позволяет сохранить данные табличного документа в следующих типах файлов:",
-   "questionTruncated": false,
-   "options": [
-    {
-     "id": "a",
-     "text": "Текстовый файл, табличный документ, документ HTML, лист Excel, текстовый файл, картинка",
-     "correct": false
-    },
-    {
-     "id": "b",
-     "text": "Текстовый файл, табличный документ, документ HTML",
-     "correct": false
-    },
-    {
-     "id": "c",
-     "text": "Текстовый файл, табличный документ, документ HTML, лист Excel",
-     "correct": true
-    },
-    {
-     "id": "d",
-     "text": "Текстовый файл",
-     "correct": false
-    },
-    {
-     "id": "e",
-     "text": "Текстовый файл, табличный документ",
-     "correct": false
-    }
-   ],
-   "multi": false,
-   "answerState": "shown",
-   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-56-11_bd0b048a0423af58ed17dda131ce6cd3.jpg",
-   "duplicateGroupId": null,
-   "sourceImages": [
-    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-56-11_bd0b048a0423af58ed17dda131ce6cd3.jpg"
-   ],
-   "confidence": 0.75,
-   "needsReview": false,
-   "layoutNote": "первый вариант набран мелко, повтор слова «текстовый файл» прочитан неуверенно",
-   "verified": {
-    "pixelCheck": "match",
-    "modelGreen": [
-     2
-    ],
-    "pixelGreen": [
-     2
-    ],
-    "answerFromOtherCategory": false,
-    "optionCountPixels": 5,
-    "partialOptionsPixels": 0,
-    "droppedEmptyOptions": 0,
-    "emptyOptionInside": false,
-    "banner": "correct",
-    "flags": [],
-    "mergedFrames": 1
-   }
-  },
-  {
-   "id": "set-1-q086",
-   "categoryId": "set-1",
-   "categoryTitle": "Общие механизмы",
-   "orderInCategory": 87,
-   "index": 68,
-   "total": 68,
-   "text": "Режим сохранения печатных форм позволяет сохранить данные текстового документа в следующих типах файлов:",
-   "questionTruncated": false,
-   "options": [
-    {
-     "id": "a",
-     "text": "Текстовый файл, табличный документ, документ HTML",
-     "correct": false
-    },
-    {
-     "id": "b",
-     "text": "Текстовый файл",
-     "correct": true
-    },
-    {
-     "id": "c",
-     "text": "Текстовый файл, табличный документ, документ HTML, лист Excel, картинка",
-     "correct": false
-    },
-    {
-     "id": "d",
-     "text": "Текстовый файл, табличный документ, документ HTML, лист Excel",
-     "correct": false
-    },
-    {
-     "id": "e",
-     "text": "Текстовый файл, табличный документ",
-     "correct": false
-    }
-   ],
-   "multi": false,
-   "answerState": "shown",
-   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-21-07-25_bd0b048a0423af58ed17dda131ce6cd3.jpg",
-   "duplicateGroupId": null,
-   "sourceImages": [
-    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-21-07-25_bd0b048a0423af58ed17dda131ce6cd3.jpg"
-   ],
-   "confidence": 0.95,
-   "needsReview": false,
-   "layoutNote": "",
-   "verified": {
-    "pixelCheck": "match",
-    "modelGreen": [
-     1
-    ],
-    "pixelGreen": [
-     1
-    ],
-    "answerFromOtherCategory": false,
-    "optionCountPixels": 5,
-    "partialOptionsPixels": 0,
-    "droppedEmptyOptions": 0,
-    "emptyOptionInside": false,
-    "banner": "correct",
-    "flags": [],
-    "mergedFrames": 1
-   }
-  },
-  {
    "id": "set-2-q001",
    "categoryId": "set-2",
    "categoryTitle": "Редактор и инструменты общие",
@@ -6079,6 +5514,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-2-q009.webp",
+    "w": 330,
+    "h": 185
    }
   },
   {
@@ -6920,6 +6360,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-2-q023.webp",
+    "w": 301,
+    "h": 38
    }
   },
   {
@@ -6979,6 +6424,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-2-q024.webp",
+    "w": 309,
+    "h": 178
    }
   },
   {
@@ -7200,6 +6650,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-2-q028.webp",
+    "w": 304,
+    "h": 54
    }
   },
   {
@@ -8984,6 +8439,70 @@ window.EXAM_DATA = {
    }
   },
   {
+   "id": "set-1-q078",
+   "categoryId": "set-2",
+   "categoryTitle": "Редактор и инструменты общие",
+   "orderInCategory": 60,
+   "index": 60,
+   "total": 68,
+   "text": "Режим сравнения файлов в конфигураторе работает со следующими типами файлов:",
+   "questionTruncated": false,
+   "options": [
+    {
+     "id": "a",
+     "text": "Текстовые и табличные",
+     "correct": false
+    },
+    {
+     "id": "b",
+     "text": "Текстовые",
+     "correct": false
+    },
+    {
+     "id": "c",
+     "text": "Текстовые, табличные, бинарные файлы, внешние отчеты и обработки, файлы конфигураций",
+     "correct": false
+    },
+    {
+     "id": "d",
+     "text": "Текстовые, табличные, бинарные файлы, внешние отчеты и обработки",
+     "correct": true
+    },
+    {
+     "id": "e",
+     "text": "Текстовые, табличные, бинарные файлы",
+     "correct": false
+    }
+   ],
+   "multi": false,
+   "answerState": "shown",
+   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-09-35_bd0b048a0423af58ed17dda131ce6cd3.jpg",
+   "duplicateGroupId": null,
+   "sourceImages": [
+    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-09-35_bd0b048a0423af58ed17dda131ce6cd3.jpg"
+   ],
+   "confidence": 0.96,
+   "needsReview": false,
+   "layoutNote": "",
+   "verified": {
+    "pixelCheck": "match",
+    "modelGreen": [
+     3
+    ],
+    "pixelGreen": [
+     3
+    ],
+    "answerFromOtherCategory": false,
+    "optionCountPixels": 5,
+    "partialOptionsPixels": 0,
+    "droppedEmptyOptions": 0,
+    "emptyOptionInside": false,
+    "banner": "correct",
+    "flags": [],
+    "mergedFrames": 1
+   }
+  },
+  {
    "id": "set-2-q059",
    "categoryId": "set-2",
    "categoryTitle": "Редактор и инструменты общие",
@@ -9036,6 +8555,508 @@ window.EXAM_DATA = {
     ],
     "pixelGreen": [
      3
+    ],
+    "answerFromOtherCategory": false,
+    "optionCountPixels": 5,
+    "partialOptionsPixels": 0,
+    "droppedEmptyOptions": 0,
+    "emptyOptionInside": false,
+    "banner": "correct",
+    "flags": [],
+    "mergedFrames": 1
+   }
+  },
+  {
+   "id": "set-1-q079",
+   "categoryId": "set-2",
+   "categoryTitle": "Редактор и инструменты общие",
+   "orderInCategory": 61,
+   "index": 61,
+   "total": 68,
+   "text": "Режим сравнения файлов в 1С:Предприятие работает со следующими типами файлов:",
+   "questionTruncated": false,
+   "options": [
+    {
+     "id": "a",
+     "text": "Текстовые",
+     "correct": false
+    },
+    {
+     "id": "b",
+     "text": "Текстовые, табличные, бинарные файлы",
+     "correct": true
+    },
+    {
+     "id": "c",
+     "text": "Текстовые, табличные, бинарные файлы, внешние отчеты и обработки, файлы конфигураций",
+     "correct": false
+    },
+    {
+     "id": "d",
+     "text": "Текстовые, табличные, бинарные файлы, внешние отчеты и обработки",
+     "correct": false
+    },
+    {
+     "id": "e",
+     "text": "Текстовые и табличные",
+     "correct": false
+    }
+   ],
+   "multi": false,
+   "answerState": "shown",
+   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-17-73_bd0b048a0423af58ed17dda131ce6cd3.jpg",
+   "duplicateGroupId": null,
+   "sourceImages": [
+    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-17-73_bd0b048a0423af58ed17dda131ce6cd3.jpg"
+   ],
+   "confidence": 0.96,
+   "needsReview": false,
+   "layoutNote": "",
+   "verified": {
+    "pixelCheck": "match",
+    "modelGreen": [
+     1
+    ],
+    "pixelGreen": [
+     1
+    ],
+    "answerFromOtherCategory": false,
+    "optionCountPixels": 5,
+    "partialOptionsPixels": 0,
+    "droppedEmptyOptions": 0,
+    "emptyOptionInside": false,
+    "banner": "correct",
+    "flags": [],
+    "mergedFrames": 1
+   }
+  },
+  {
+   "id": "set-1-q080",
+   "categoryId": "set-2",
+   "categoryTitle": "Редактор и инструменты общие",
+   "orderInCategory": 62,
+   "index": 62,
+   "total": 68,
+   "text": "Режим временной блокировки предназначен для:",
+   "questionTruncated": false,
+   "options": [
+    {
+     "id": "a",
+     "text": "Предотвращения несанкционированного использования системы 1С:Предприятие в отсутствие пользователя",
+     "correct": true
+    },
+    {
+     "id": "b",
+     "text": "Для временной блокировки объекта информационной базы для использования другими пользователями",
+     "correct": false
+    },
+    {
+     "id": "c",
+     "text": "Блокировки подключений пользователей к информационной базе",
+     "correct": false
+    }
+   ],
+   "multi": false,
+   "answerState": "shown",
+   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-23-03_bd0b048a0423af58ed17dda131ce6cd3.jpg",
+   "duplicateGroupId": null,
+   "sourceImages": [
+    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-23-03_bd0b048a0423af58ed17dda131ce6cd3.jpg"
+   ],
+   "confidence": 0.97,
+   "needsReview": false,
+   "layoutNote": "",
+   "verified": {
+    "pixelCheck": "match",
+    "modelGreen": [
+     0
+    ],
+    "pixelGreen": [
+     0
+    ],
+    "answerFromOtherCategory": false,
+    "optionCountPixels": 3,
+    "partialOptionsPixels": 0,
+    "droppedEmptyOptions": 0,
+    "emptyOptionInside": false,
+    "banner": "correct",
+    "flags": [],
+    "mergedFrames": 1
+   }
+  },
+  {
+   "id": "set-1-q081",
+   "categoryId": "set-2",
+   "categoryTitle": "Редактор и инструменты общие",
+   "orderInCategory": 63,
+   "index": 63,
+   "total": 68,
+   "text": "Режим временной блокировки может использоваться:",
+   "questionTruncated": false,
+   "options": [
+    {
+     "id": "a",
+     "text": "В режиме конфигуратора",
+     "correct": false
+    },
+    {
+     "id": "b",
+     "text": "В режиме толстого клиента 1С:Предприятия",
+     "correct": false
+    },
+    {
+     "id": "c",
+     "text": "В режиме тонкого клиента 1С:Предприятия",
+     "correct": false
+    },
+    {
+     "id": "d",
+     "text": "Варианты 1 и 2",
+     "correct": true
+    },
+    {
+     "id": "e",
+     "text": "Верны все варианты",
+     "correct": false
+    }
+   ],
+   "multi": false,
+   "answerState": "shown",
+   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-29-70_bd0b048a0423af58ed17dda131ce6cd3.jpg",
+   "duplicateGroupId": null,
+   "sourceImages": [
+    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-29-70_bd0b048a0423af58ed17dda131ce6cd3.jpg"
+   ],
+   "confidence": 0.97,
+   "needsReview": false,
+   "layoutNote": "",
+   "verified": {
+    "pixelCheck": "match",
+    "modelGreen": [
+     3
+    ],
+    "pixelGreen": [
+     3
+    ],
+    "answerFromOtherCategory": false,
+    "optionCountPixels": 5,
+    "partialOptionsPixels": 0,
+    "droppedEmptyOptions": 0,
+    "emptyOptionInside": false,
+    "banner": "correct",
+    "flags": [],
+    "mergedFrames": 1
+   }
+  },
+  {
+   "id": "set-1-q082",
+   "categoryId": "set-2",
+   "categoryTitle": "Редактор и инструменты общие",
+   "orderInCategory": 64,
+   "index": 64,
+   "total": 68,
+   "text": "Режим установки параметров предназначен для настройки:",
+   "questionTruncated": false,
+   "options": [
+    {
+     "id": "a",
+     "text": "Режима работы конфигуратора",
+     "correct": false
+    },
+    {
+     "id": "b",
+     "text": "Режима работы 1С:Предприятия",
+     "correct": false
+    },
+    {
+     "id": "c",
+     "text": "Панели инструментов главного меню",
+     "correct": false
+    },
+    {
+     "id": "d",
+     "text": "Варианты 1 и 2",
+     "correct": true
+    },
+    {
+     "id": "e",
+     "text": "Верны все варианты",
+     "correct": false
+    }
+   ],
+   "multi": false,
+   "answerState": "shown",
+   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-37-24_bd0b048a0423af58ed17dda131ce6cd3.jpg",
+   "duplicateGroupId": null,
+   "sourceImages": [
+    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-37-24_bd0b048a0423af58ed17dda131ce6cd3.jpg"
+   ],
+   "confidence": 0.96,
+   "needsReview": false,
+   "layoutNote": "",
+   "verified": {
+    "pixelCheck": "match",
+    "modelGreen": [
+     3
+    ],
+    "pixelGreen": [
+     3
+    ],
+    "answerFromOtherCategory": false,
+    "optionCountPixels": 5,
+    "partialOptionsPixels": 0,
+    "droppedEmptyOptions": 0,
+    "emptyOptionInside": false,
+    "banner": "correct",
+    "flags": [],
+    "mergedFrames": 1
+   }
+  },
+  {
+   "id": "set-1-q083",
+   "categoryId": "set-2",
+   "categoryTitle": "Редактор и инструменты общие",
+   "orderInCategory": 65,
+   "index": 65,
+   "total": 68,
+   "text": "Режим \"Сервис/Параметры\" определяет параметры для:",
+   "questionTruncated": false,
+   "options": [
+    {
+     "id": "a",
+     "text": "Для прикладного решения",
+     "correct": false
+    },
+    {
+     "id": "b",
+     "text": "Для пользователя",
+     "correct": false
+    },
+    {
+     "id": "c",
+     "text": "Для сеанса",
+     "correct": false
+    },
+    {
+     "id": "d",
+     "text": "Варианты 2 и 3",
+     "correct": false
+    },
+    {
+     "id": "e",
+     "text": "Верны все варианты",
+     "correct": true
+    }
+   ],
+   "multi": false,
+   "answerState": "shown",
+   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-41-80_bd0b048a0423af58ed17dda131ce6cd3.jpg",
+   "duplicateGroupId": null,
+   "sourceImages": [
+    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-41-80_bd0b048a0423af58ed17dda131ce6cd3.jpg"
+   ],
+   "confidence": 0.97,
+   "needsReview": false,
+   "layoutNote": "",
+   "verified": {
+    "pixelCheck": "match",
+    "modelGreen": [
+     4
+    ],
+    "pixelGreen": [
+     4
+    ],
+    "answerFromOtherCategory": false,
+    "optionCountPixels": 5,
+    "partialOptionsPixels": 0,
+    "droppedEmptyOptions": 0,
+    "emptyOptionInside": false,
+    "banner": "correct",
+    "flags": [],
+    "mergedFrames": 1
+   }
+  },
+  {
+   "id": "set-1-q084",
+   "categoryId": "set-2",
+   "categoryTitle": "Редактор и инструменты общие",
+   "orderInCategory": 66,
+   "index": 66,
+   "total": 68,
+   "text": "Режим сохранения печатных форм предназначен для сохранения:",
+   "questionTruncated": false,
+   "options": [
+    {
+     "id": "a",
+     "text": "Диалоговой формы ввода данных в виде картинки",
+     "correct": false
+    },
+    {
+     "id": "b",
+     "text": "Данных табличного поля в виде файла",
+     "correct": false
+    },
+    {
+     "id": "c",
+     "text": "Данных табличного или текстового документа в виде файла",
+     "correct": true
+    },
+    {
+     "id": "d",
+     "text": "Варианты 1 и 2",
+     "correct": false
+    },
+    {
+     "id": "e",
+     "text": "Верны все варианты",
+     "correct": false
+    }
+   ],
+   "multi": false,
+   "answerState": "shown",
+   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-48-50_bd0b048a0423af58ed17dda131ce6cd3.jpg",
+   "duplicateGroupId": null,
+   "sourceImages": [
+    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-48-50_bd0b048a0423af58ed17dda131ce6cd3.jpg"
+   ],
+   "confidence": 0.97,
+   "needsReview": false,
+   "layoutNote": "",
+   "verified": {
+    "pixelCheck": "match",
+    "modelGreen": [
+     2
+    ],
+    "pixelGreen": [
+     2
+    ],
+    "answerFromOtherCategory": false,
+    "optionCountPixels": 5,
+    "partialOptionsPixels": 0,
+    "droppedEmptyOptions": 0,
+    "emptyOptionInside": false,
+    "banner": "correct",
+    "flags": [],
+    "mergedFrames": 1
+   }
+  },
+  {
+   "id": "set-1-q085",
+   "categoryId": "set-2",
+   "categoryTitle": "Редактор и инструменты общие",
+   "orderInCategory": 67,
+   "index": 67,
+   "total": 68,
+   "text": "Режим сохранения печатных форм позволяет сохранить данные табличного документа в следующих типах файлов:",
+   "questionTruncated": false,
+   "options": [
+    {
+     "id": "a",
+     "text": "Текстовый файл, табличный документ, документ HTML, лист Excel, текстовый файл, картинка",
+     "correct": false
+    },
+    {
+     "id": "b",
+     "text": "Текстовый файл, табличный документ, документ HTML",
+     "correct": false
+    },
+    {
+     "id": "c",
+     "text": "Текстовый файл, табличный документ, документ HTML, лист Excel",
+     "correct": true
+    },
+    {
+     "id": "d",
+     "text": "Текстовый файл",
+     "correct": false
+    },
+    {
+     "id": "e",
+     "text": "Текстовый файл, табличный документ",
+     "correct": false
+    }
+   ],
+   "multi": false,
+   "answerState": "shown",
+   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-56-11_bd0b048a0423af58ed17dda131ce6cd3.jpg",
+   "duplicateGroupId": null,
+   "sourceImages": [
+    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-20-56-11_bd0b048a0423af58ed17dda131ce6cd3.jpg"
+   ],
+   "confidence": 0.75,
+   "needsReview": false,
+   "layoutNote": "первый вариант набран мелко, повтор слова «текстовый файл» прочитан неуверенно",
+   "verified": {
+    "pixelCheck": "match",
+    "modelGreen": [
+     2
+    ],
+    "pixelGreen": [
+     2
+    ],
+    "answerFromOtherCategory": false,
+    "optionCountPixels": 5,
+    "partialOptionsPixels": 0,
+    "droppedEmptyOptions": 0,
+    "emptyOptionInside": false,
+    "banner": "correct",
+    "flags": [],
+    "mergedFrames": 1
+   }
+  },
+  {
+   "id": "set-1-q086",
+   "categoryId": "set-2",
+   "categoryTitle": "Редактор и инструменты общие",
+   "orderInCategory": 68,
+   "index": 68,
+   "total": 68,
+   "text": "Режим сохранения печатных форм позволяет сохранить данные текстового документа в следующих типах файлов:",
+   "questionTruncated": false,
+   "options": [
+    {
+     "id": "a",
+     "text": "Текстовый файл, табличный документ, документ HTML",
+     "correct": false
+    },
+    {
+     "id": "b",
+     "text": "Текстовый файл",
+     "correct": true
+    },
+    {
+     "id": "c",
+     "text": "Текстовый файл, табличный документ, документ HTML, лист Excel, картинка",
+     "correct": false
+    },
+    {
+     "id": "d",
+     "text": "Текстовый файл, табличный документ, документ HTML, лист Excel",
+     "correct": false
+    },
+    {
+     "id": "e",
+     "text": "Текстовый файл, табличный документ",
+     "correct": false
+    }
+   ],
+   "multi": false,
+   "answerState": "shown",
+   "answerSourceImage": "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-21-07-25_bd0b048a0423af58ed17dda131ce6cd3.jpg",
+   "duplicateGroupId": null,
+   "sourceImages": [
+    "C:\\Users\\PC\\Desktop\\Экзамен\\1\\1\\Screenshot_2026-06-06-14-21-07-25_bd0b048a0423af58ed17dda131ce6cd3.jpg"
+   ],
+   "confidence": 0.95,
+   "needsReview": false,
+   "layoutNote": "",
+   "verified": {
+    "pixelCheck": "match",
+    "modelGreen": [
+     1
+    ],
+    "pixelGreen": [
+     1
     ],
     "answerFromOtherCategory": false,
     "optionCountPixels": 5,
@@ -9465,6 +9486,11 @@ window.EXAM_DATA = {
      "partial_option"
     ],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-3-q007.webp",
+    "w": 315,
+    "h": 270
    }
   },
   {
@@ -9706,6 +9732,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-3-q011.webp",
+    "w": 314,
+    "h": 319
    }
   },
   {
@@ -9829,6 +9860,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-3-q013.webp",
+    "w": 320,
+    "h": 84
    }
   },
   {
@@ -10690,6 +10726,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-3-q027.webp",
+    "w": 318,
+    "h": 126
    }
   },
   {
@@ -13052,6 +13093,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-3-q065.webp",
+    "w": 320,
+    "h": 307
    }
   },
   {
@@ -14021,6 +14067,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-4-q011.webp",
+    "w": 318,
+    "h": 211
    }
   },
   {
@@ -14139,6 +14190,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-4-q013.webp",
+    "w": 318,
+    "h": 213
    }
   },
   {
@@ -14316,6 +14372,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-4-q016.webp",
+    "w": 316,
+    "h": 186
    }
   },
   {
@@ -14493,6 +14554,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-4-q019.webp",
+    "w": 318,
+    "h": 205
    }
   },
   {
@@ -15034,6 +15100,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-4-q028.webp",
+    "w": 318,
+    "h": 296
    }
   },
   {
@@ -15211,6 +15282,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-4-q031.webp",
+    "w": 318,
+    "h": 140
    }
   },
   {
@@ -15270,6 +15346,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-4-q032.webp",
+    "w": 318,
+    "h": 293
    }
   },
   {
@@ -15653,6 +15734,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-4-q039.webp",
+    "w": 318,
+    "h": 293
    }
   },
   {
@@ -17988,6 +18074,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-5-q009.webp",
+    "w": 309,
+    "h": 161
    }
   },
   {
@@ -19242,6 +19333,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-5-q030.webp",
+    "w": 318,
+    "h": 178
    }
   },
   {
@@ -19306,6 +19402,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-5-q031.webp",
+    "w": 318,
+    "h": 176
    }
   },
   {
@@ -19758,6 +19859,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-5-q039.webp",
+    "w": 318,
+    "h": 185
    }
   },
   {
@@ -20008,6 +20114,11 @@ window.EXAM_DATA = {
      "partial_option"
     ],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-5-q043.webp",
+    "w": 318,
+    "h": 278
    }
   },
   {
@@ -20822,6 +20933,11 @@ window.EXAM_DATA = {
      "answer_not_shown"
     ],
     "mergedFrames": 2
+   },
+   "image": {
+    "src": "images/questions/set-5-q056.webp",
+    "w": 318,
+    "h": 168
    }
   },
   {
@@ -30068,6 +30184,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-8-q004.webp",
+    "w": 318,
+    "h": 263
    }
   },
   {
@@ -30245,6 +30366,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-8-q007.webp",
+    "w": 318,
+    "h": 226
    }
   },
   {
@@ -37068,6 +37194,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q026.webp",
+    "w": 318,
+    "h": 196
    }
   },
   {
@@ -38737,6 +38868,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q054.webp",
+    "w": 318,
+    "h": 291
    }
   },
   {
@@ -39367,6 +39503,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q064.webp",
+    "w": 328,
+    "h": 80
    }
   },
   {
@@ -39549,6 +39690,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q067.webp",
+    "w": 327,
+    "h": 228
    }
   },
   {
@@ -39893,6 +40039,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q073.webp",
+    "w": 319,
+    "h": 199
    }
   },
   {
@@ -40075,6 +40226,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q076.webp",
+    "w": 318,
+    "h": 200
    }
   },
   {
@@ -40134,6 +40290,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q077.webp",
+    "w": 318,
+    "h": 269
    }
   },
   {
@@ -40328,6 +40489,11 @@ window.EXAM_DATA = {
      "partial_option"
     ],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q080.webp",
+    "w": 318,
+    "h": 401
    }
   },
   {
@@ -40392,6 +40558,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q081.webp",
+    "w": 312,
+    "h": 150
    }
   },
   {
@@ -40525,6 +40696,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q083.webp",
+    "w": 324,
+    "h": 68
    }
   },
   {
@@ -40654,6 +40830,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 2
+   },
+   "image": {
+    "src": "images/questions/set-10-q085.webp",
+    "w": 318,
+    "h": 239
    }
   },
   {
@@ -40713,6 +40894,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q086.webp",
+    "w": 317,
+    "h": 148
    }
   },
   {
@@ -40782,6 +40968,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q087.webp",
+    "w": 318,
+    "h": 112
    }
   },
   {
@@ -40836,6 +41027,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q088.webp",
+    "w": 318,
+    "h": 124
    }
   },
   {
@@ -40900,6 +41096,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q089.webp",
+    "w": 318,
+    "h": 124
    }
   },
   {
@@ -41151,6 +41352,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q093.webp",
+    "w": 314,
+    "h": 41
    }
   },
   {
@@ -41215,6 +41421,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q094.webp",
+    "w": 314,
+    "h": 41
    }
   },
   {
@@ -41281,6 +41492,11 @@ window.EXAM_DATA = {
      "partial_option"
     ],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q095.webp",
+    "w": 318,
+    "h": 318
    }
   },
   {
@@ -41347,6 +41563,11 @@ window.EXAM_DATA = {
      "partial_option"
     ],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q096.webp",
+    "w": 318,
+    "h": 318
    }
   },
   {
@@ -41406,6 +41627,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q097.webp",
+    "w": 318,
+    "h": 354
    }
   },
   {
@@ -41470,6 +41696,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q098.webp",
+    "w": 329,
+    "h": 354
    }
   },
   {
@@ -41534,6 +41765,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q099.webp",
+    "w": 318,
+    "h": 357
    }
   },
   {
@@ -41600,6 +41836,11 @@ window.EXAM_DATA = {
      "partial_option"
     ],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q100.webp",
+    "w": 318,
+    "h": 358
    }
   },
   {
@@ -41659,6 +41900,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q101.webp",
+    "w": 318,
+    "h": 354
    }
   },
   {
@@ -41724,6 +41970,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 2
+   },
+   "image": {
+    "src": "images/questions/set-10-q102.webp",
+    "w": 311,
+    "h": 81
    }
   },
   {
@@ -42268,6 +42519,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 2
+   },
+   "image": {
+    "src": "images/questions/set-10-q110.webp",
+    "w": 317,
+    "h": 99
    }
   },
   {
@@ -42391,6 +42647,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-10-q112.webp",
+    "w": 318,
+    "h": 34
    }
   },
   {
@@ -43919,6 +44180,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-11-q011.webp",
+    "w": 330,
+    "h": 199
    }
   },
   {
@@ -43983,6 +44249,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-11-q012.webp",
+    "w": 317,
+    "h": 145
    }
   },
   {
@@ -45063,6 +45334,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-11-q029.webp",
+    "w": 317,
+    "h": 133
    }
   },
   {
@@ -45882,6 +46158,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-11-q042.webp",
+    "w": 318,
+    "h": 227
    }
   },
   {
@@ -45946,6 +46227,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-11-q043.webp",
+    "w": 316,
+    "h": 221
    }
   },
   {
@@ -46010,6 +46296,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-11-q044.webp",
+    "w": 318,
+    "h": 215
    }
   },
   {
@@ -46074,6 +46365,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-11-q045.webp",
+    "w": 318,
+    "h": 228
    }
   },
   {
@@ -46310,6 +46606,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-11-q049.webp",
+    "w": 318,
+    "h": 172
    }
   },
   {
@@ -46374,6 +46675,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-11-q050.webp",
+    "w": 318,
+    "h": 177
    }
   },
   {
@@ -46438,6 +46744,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-11-q051.webp",
+    "w": 318,
+    "h": 177
    }
   },
   {
@@ -49920,6 +50231,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-12-q055.webp",
+    "w": 314,
+    "h": 185
    }
   },
   {
@@ -49979,6 +50295,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-12-q056.webp",
+    "w": 314,
+    "h": 183
    }
   },
   {
@@ -50038,6 +50359,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-12-q057.webp",
+    "w": 322,
+    "h": 190
    }
   },
   {
@@ -50097,6 +50423,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-12-q058.webp",
+    "w": 322,
+    "h": 197
    }
   },
   {
@@ -50156,6 +50487,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-12-q059.webp",
+    "w": 314,
+    "h": 185
    }
   },
   {
@@ -50220,6 +50556,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-12-q060.webp",
+    "w": 314,
+    "h": 185
    }
   },
   {
@@ -50284,6 +50625,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-12-q061.webp",
+    "w": 313,
+    "h": 189
    }
   },
   {
@@ -50869,6 +51215,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-12-q071.webp",
+    "w": 318,
+    "h": 307
    }
   },
   {
@@ -50923,6 +51274,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-12-q072.webp",
+    "w": 328,
+    "h": 306
    }
   },
   {
@@ -57318,6 +57674,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-14-q042.webp",
+    "w": 326,
+    "h": 212
    }
   },
   {
@@ -57846,6 +58207,11 @@ window.EXAM_DATA = {
      "partial_option"
     ],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-14-q051.webp",
+    "w": 317,
+    "h": 215
    }
   },
   {
@@ -57969,6 +58335,11 @@ window.EXAM_DATA = {
     "banner": "correct",
     "flags": [],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-14-q053.webp",
+    "w": 318,
+    "h": 234
    }
   },
   {
@@ -58094,6 +58465,11 @@ window.EXAM_DATA = {
      "partial_option"
     ],
     "mergedFrames": 1
+   },
+   "image": {
+    "src": "images/questions/set-14-q055.webp",
+    "w": 318,
+    "h": 234
    }
   },
   {
