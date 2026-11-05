@@ -12,7 +12,7 @@
  * приложение при этом работает как обычно, только без офлайн-кэша.
  */
 
-const VERSION = '2026-11-05-guide13';
+const VERSION = '2026-11-05-guides-all';
 const CACHE = `1c-trainer-${VERSION}`;
 
 const ASSETS = [
@@ -23,7 +23,20 @@ const ASSETS = [
   './app-core.js',
   './data/questions.js',
   './data/explanations.js',
-  './data/guides.js',
+  './data/guides/set-1.js',
+  './data/guides/set-2.js',
+  './data/guides/set-3.js',
+  './data/guides/set-4.js',
+  './data/guides/set-5.js',
+  './data/guides/set-6.js',
+  './data/guides/set-7.js',
+  './data/guides/set-8.js',
+  './data/guides/set-9.js',
+  './data/guides/set-10.js',
+  './data/guides/set-11.js',
+  './data/guides/set-12.js',
+  './data/guides/set-13.js',
+  './data/guides/set-14.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',

@@ -622,6 +622,8 @@ kbd {
 .guide th { background: var(--surface-2); font-weight: 600; }
 @media (max-width: 620px) {
   .guide { padding: 16px 14px; }
+  .top { flex-wrap: wrap; row-gap: 10px; }
+  .top > .row { flex-wrap: wrap; }
   .guide table { font-size: 13px; table-layout: fixed; }
   .guide th, .guide td { overflow-wrap: anywhere; hyphens: auto; }
   .guide th, .guide td { padding: 7px 6px; }

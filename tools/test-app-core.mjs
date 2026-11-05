@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 
 const require = createRequire(import.meta.url);
 const Core = require('../app-core.js');
@@ -113,9 +113,12 @@ test('разборы тем: ключи совпадают с темами ба�
   const bank = read('questions.js');
   const cats = new Set(JSON.parse(bank.slice(bank.indexOf('{'), bank.lastIndexOf('}') + 1)).categories.map((c) => c.id));
   const sandbox = {};
-  new Function('window', read('guides.js'))(sandbox);
+  const dir = new URL('../data/guides/', import.meta.url);
+  for (const file of readdirSync(dir).filter((f) => f.endsWith('.js'))) {
+    new Function('window', readFileSync(new URL(file, dir), 'utf8'))(sandbox);
+  }
   const entries = Object.entries(sandbox.EXAM_GUIDES);
-  assert.ok(entries.length > 0);
+  assert.equal(entries.length, cats.size, 'разбор есть для каждой темы');
   for (const [id, guide] of entries) {
     assert.ok(cats.has(id), `нет темы ${id}`);
     assert.ok(guide.title && guide.html.length > 1000, `пустой разбор: ${id}`);
