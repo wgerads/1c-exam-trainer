@@ -89,8 +89,10 @@
     const img = el('img', {
       class: 'question__image',
       src: image.src,
-      width: image.w,
-      height: image.h,
+      // В карточке показываем в 1,6 раза крупнее исходного кадра: файл
+      // в 3-кратном разрешении, так что картинка остаётся чёткой.
+      width: Math.round(image.w * 1.6),
+      height: Math.round(image.h * 1.6),
       alt: 'Иллюстрация к вопросу',
       loading: 'lazy',
       decoding: 'async',
@@ -107,32 +109,43 @@
           openLightbox(image);
         },
       },
-      [img],
+      [img, el('span', { class: 'question__zoom', 'aria-hidden': 'true', text: '⤢ Увеличить' })],
     );
   }
 
   function openLightbox(image) {
     closeLightbox();
-    // Увеличиваем мелкие картинки, но не больше экрана.
-    const scale = Math.min(3, Math.max(1, 900 / image.w));
+    // Файлы картинок хранятся в 3-кратном разрешении (image.w/h — исходный
+    // размер кадра). Сначала картинка вписывается в экран, нажатие на неё
+    // переключает режим «крупно» с прокруткой (до 3×, то есть 1 пиксель файла
+    // на пиксель экрана), нажатие на фон закрывает окно.
+    const img = el('img', {
+      src: image.src,
+      alt: 'Иллюстрация к вопросу',
+      style: `width:${Math.round(image.w * 3)}px`,
+      onclick: (event) => {
+        event.stopPropagation();
+        lightbox.classList.toggle('is-zoomed');
+      },
+    });
+    const close = el('button', { type: 'button', class: 'lightbox__close', 'aria-label': 'Закрыть', onclick: closeLightbox }, '✕');
     lightbox = el(
       'div',
       { class: 'lightbox', role: 'dialog', 'aria-label': 'Картинка к вопросу', onclick: closeLightbox },
       [
-        el('img', {
-          src: image.src,
-          alt: 'Иллюстрация к вопросу',
-          style: `width:${Math.round(image.w * scale)}px`,
-        }),
-        el('span', { class: 'lightbox__hint', text: 'Нажмите или Esc, чтобы закрыть' }),
+        close,
+        el('div', { class: 'lightbox__stage' }, [img]),
+        el('span', { class: 'lightbox__hint', text: 'Нажмите на картинку, чтобы увеличить. Фон или Esc — закрыть' }),
       ],
     );
     document.body.appendChild(lightbox);
+    document.body.classList.add('no-scroll');
   }
 
   function closeLightbox() {
     if (lightbox) lightbox.remove();
     lightbox = null;
+    document.body.classList.remove('no-scroll');
   }
 
   function plural(n, one, few, many) {
@@ -165,34 +178,46 @@
     const totals = DataTotals();
     const head = el('header', { class: 'top' }, [
       el('div', { class: 'brand' }, [
-        el('strong', { text: '1С:Профессионал' }),
-        el('span', { text: 'тренажёр вопросов' }),
+        el('span', { class: 'brand__logo', 'aria-hidden': 'true', text: '1С' }),
+        el('div', {}, [
+          el('strong', { text: '1С:Профессионал' }),
+          el('span', { text: 'тренажёр вопросов по платформе 8.3' }),
+        ]),
       ]),
-      el('button', { class: 'ghost small', onclick: renderHome, title: 'Обновить сводку' }, 'Обновить'),
     ]);
     root.appendChild(head);
 
+    const errorsPct = totals.total ? (totals.errors / totals.total) * 100 : 0;
     root.appendChild(
-      el('div', { class: 'card', style: 'margin-bottom:16px' }, [
-        el('div', { class: 'row spread' }, [
-          el('div', { class: 'grow' }, [
-            el('h2', { text: `Всего вопросов: ${totals.total}` }),
-            el('div', { class: 'legend' }, [
-              el('span', {}, [el('b', { text: String(totals.known) }), ' изучено']),
-              el('span', {}, [el('b', { text: String(totals.errors) }), ' с ошибками']),
-              el('span', {}, [el('b', { text: String(totals.untouched) }), ' не начато']),
-            ]),
+      el('section', { class: 'card hero' }, [
+        el(
+          'div',
+          {
+            class: 'ring',
+            style: `--p:${totals.percent}`,
+            role: 'img',
+            'aria-label': `Изучено ${totals.percent}% банка`,
+          },
+          [el('b', { text: `${totals.percent}%` }), el('span', { text: 'изучено' })],
+        ),
+        el('div', { class: 'hero__body' }, [
+          el('h1', { text: `${totals.total} ${plural(totals.total, 'вопрос', 'вопроса', 'вопросов')} в банке` }),
+          el('div', { class: 'stats' }, [
+            el('div', { class: 'stat-chip ok' }, [el('b', { text: String(totals.known) }), 'изучено']),
+            el('div', { class: 'stat-chip bad' }, [el('b', { text: String(totals.errors) }), 'с ошибками']),
+            el('div', { class: 'stat-chip' }, [el('b', { text: String(totals.untouched) }), 'не начато']),
+          ]),
+          el('div', { class: 'bar stacked' }, [
+            el('i', { style: `width:${totals.percent}%` }),
+            el('i', { class: 'bad', style: `width:${errorsPct.toFixed(1)}%` }),
           ]),
         ]),
-        el('div', { class: 'bar', style: 'margin-top:12px' }, [
-          el('i', { style: `width:${totals.percent}%` }),
-        ]),
-        el('p', { class: 'muted', style: 'margin:8px 0 0' }, `Изучено ${totals.percent}% банка`),
       ]),
     );
 
     root.appendChild(renderExamCard());
 
+    root.appendChild(el('h2', { class: 'section-title', text: 'Темы' }));
     const list = el('div', { class: 'categories' });
     for (const category of DATA.categories || []) {
       const questions = questionsByCategory.get(category.id) || [];

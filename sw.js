@@ -12,7 +12,7 @@
  * приложение при этом работает как обычно, только без офлайн-кэша.
  */
 
-const VERSION = '2026-11-05-images';
+const VERSION = '2026-11-05-ui2';
 const CACHE = `1c-trainer-${VERSION}`;
 
 const ASSETS = [
