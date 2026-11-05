@@ -94,6 +94,20 @@ test('passScoreFor: та же доля 12/14 для неполного биле�
   assert.equal(Core.passScoreFor(7), 6);
 });
 
+test('объяснения: ключи совпадают с id вопросов, у каждого есть подсказка и объяснение', () => {
+  const read = (file) => readFileSync(new URL(`../data/${file}`, import.meta.url), 'utf8');
+  const bank = read('questions.js');
+  const ids = new Set(JSON.parse(bank.slice(bank.indexOf('{'), bank.lastIndexOf('}') + 1)).questions.map((x) => x.id));
+  const sandbox = {};
+  new Function('window', read('explanations.js'))(sandbox);
+  const entries = Object.entries(sandbox.EXAM_EXPLANATIONS);
+  assert.ok(entries.length > 0);
+  for (const [id, value] of entries) {
+    assert.ok(ids.has(id), `нет вопроса ${id}`);
+    assert.ok(value.h && value.e, `пустая подсказка или объяснение: ${id}`);
+  }
+});
+
 test('formatTime', () => {
   assert.equal(Core.formatTime(0), '00:00');
   assert.equal(Core.formatTime(125), '02:05');

@@ -81,6 +81,20 @@
   // Картинки вырезаны со скриншотов тренажёра и довольно мелкие, поэтому по
   // нажатию открываются увеличенными поверх страницы (Esc или клик — закрыть).
 
+  // --- Подсказки и объяснения (data/explanations.js) ---
+
+  const EXPLANATIONS = window.EXAM_EXPLANATIONS || {};
+
+  function explanationOf(question) {
+    return EXPLANATIONS[question.id] || {};
+  }
+
+  function explanationBlock(question) {
+    const text = explanationOf(question).e;
+    if (!text) return null;
+    return el('div', { class: 'explain' }, [el('b', { text: 'Почему так. ' }), text]);
+  }
+
   let lightbox = null;
 
   function questionImage(question) {
@@ -425,6 +439,26 @@
       options.appendChild(button);
     });
     card.appendChild(options);
+    const hint = explanationOf(question).h;
+    if (hint) {
+      const hintText = el('div', { class: 'explain explain--hint hidden', id: 'hint', text: hint });
+      const hintButton = el(
+        'button',
+        {
+          type: 'button',
+          class: 'small ghost hint-btn',
+          id: 'hint-btn',
+          title: 'Подсказка (H)',
+          onclick: () => {
+            hintText.classList.remove('hidden');
+            hintButton.remove();
+          },
+        },
+        'Подсказка',
+      );
+      card.appendChild(hintButton);
+      card.appendChild(hintText);
+    }
     root.appendChild(card);
 
     const checkButton = el(
@@ -513,6 +547,14 @@
     banner.textContent = isCorrect ? 'Верно' : 'Неверно';
     banner.className = `banner show ${isCorrect ? 'ok' : 'bad'}`;
 
+    // После ответа подсказка больше не нужна — показываем объяснение.
+    const hintButton = document.getElementById('hint-btn');
+    if (hintButton) hintButton.remove();
+    const hintText = document.getElementById('hint');
+    if (hintText) hintText.remove();
+    const explanation = explanationBlock(question);
+    if (explanation) root.querySelector('.options').after(explanation);
+
     // Обновляем счётчики и полосу сразу, не дожидаясь следующего вопроса.
     if (session.metaEls) {
       session.metaEls.remainingEl.textContent = `Осталось ${Math.max(0, session.queue.length - session.pos - 1)}`;
@@ -558,6 +600,14 @@
         if (!document.getElementById('action').classList.contains('hidden')) onPrimaryAction();
       } else if (session.selected.length) {
         answer();
+      }
+      return;
+    }
+    if (['h', 'H', 'р', 'Р'].includes(event.key)) {
+      const hintButton = document.getElementById('hint-btn');
+      if (hintButton) {
+        event.preventDefault();
+        hintButton.click();
       }
       return;
     }
@@ -726,10 +776,11 @@
               status === 'error' && el('span', { class: 'pill bad', text: 'С ошибкой' }),
             ]),
             el('div', { class: 'question', text: question.text }),
-      questionImage(question),
+            questionImage(question),
             question.needsReview &&
               el('div', { class: 'question__note', text: '(помечен для проверки: формулировка могла распознаться не полностью)' }),
             options,
+            explanationBlock(question),
           ]),
         );
       }
@@ -1169,8 +1220,9 @@
             el('span', { class: `pill ${item.ok ? 'ok' : 'bad'}`, text: status }),
           ]),
           el('div', { class: 'question', text: question.text }),
-      questionImage(question),
+          questionImage(question),
           options,
+          explanationBlock(question),
         ]),
       );
     });

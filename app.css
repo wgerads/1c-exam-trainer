@@ -580,6 +580,22 @@ kbd {
   font-family: inherit;
 }
 
+/* --- Подсказки и объяснения --- */
+
+.hint-btn { margin-top: 14px; }
+.explain {
+  margin-top: 14px;
+  padding: 11px 14px;
+  border-left: 3px solid var(--ok);
+  border-radius: var(--radius-sm);
+  background: var(--ok-soft);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.55;
+}
+.explain b { color: var(--ok); }
+.explain--hint { border-left-color: var(--warn); background: var(--warn-soft); }
+
 .hidden { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
