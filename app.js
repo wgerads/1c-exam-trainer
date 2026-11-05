@@ -9,6 +9,9 @@
   const DATA = window.EXAM_DATA;
   const STORAGE_KEY = 'exam1c.progress.v1';
   const MAX_REQUEUE_PER_QUESTION = 2; // сколько раз возвращать вопрос в очередь за сессию
+  const EXAM_KEY = 'exam1c.exam.current.v1'; // незавершённый экзамен (переживает перезагрузку)
+  const EXAM_HISTORY_KEY = 'exam1c.exam.history.v1';
+  const EXAM_HISTORY_LIMIT = 20;
 
   const root = document.getElementById('app');
   if (!Core || !DATA || !Array.isArray(DATA.questions)) {
@@ -127,6 +130,8 @@
         el('p', { class: 'muted', style: 'margin:8px 0 0' }, `Изучено ${totals.percent}% банка`),
       ]),
     );
+
+    root.appendChild(renderExamCard());
 
     const list = el('div', { class: 'categories' });
     for (const category of DATA.categories || []) {
@@ -438,6 +443,10 @@
   }
 
   function onKeyDown(event) {
+    if (exam.active) {
+      onExamKeyDown(event);
+      return;
+    }
     if (!session.question || !root.querySelector('.options')) return;
     const question = session.question;
     if (event.key === 'Escape') {
@@ -518,6 +527,456 @@
       el('button', { class: 'ghost', onclick: renderHome }, 'К списку тем'),
     ]);
     root.appendChild(foot);
+  }
+
+  // --- Режим экзамена ---
+  //
+  // Как на настоящем тестировании: билет из 14 вопросов (по одному из каждой
+  // темы), 30 минут, зачёт от 12 верных. Правильные ответы во время экзамена
+  // не показываются; между вопросами можно свободно переходить и менять ответ.
+
+  const questionById = new Map(DATA.questions.map((q) => [q.id, q]));
+
+  const exam = {
+    active: false,
+    questions: [],
+    answers: [], // answers[i] — выбранные индексы вариантов
+    pos: 0,
+    startedAt: 0,
+    deadline: 0,
+    timerId: null,
+  };
+
+  function readJson(key) {
+    try {
+      const raw = window.localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+  function writeJson(key, value) {
+    try {
+      if (value === null) window.localStorage.removeItem(key);
+      else window.localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      storageAvailable = false;
+    }
+  }
+
+  function loadExamHistory() {
+    const list = readJson(EXAM_HISTORY_KEY);
+    return Array.isArray(list) ? list.filter((r) => r && typeof r === 'object') : [];
+  }
+
+  /** Незавершённый экзамен из хранилища (или null, если его нет либо он битый). */
+  function loadSavedExam() {
+    const saved = readJson(EXAM_KEY);
+    if (!saved || !Array.isArray(saved.ids) || !saved.ids.length) return null;
+    const questions = saved.ids.map((id) => questionById.get(id));
+    if (questions.some((q) => !q)) return null; // банк обновился — старый билет не восстановить
+    return {
+      questions,
+      answers: Array.isArray(saved.answers) ? saved.answers.map((a) => (Array.isArray(a) ? a : [])) : [],
+      pos: Number(saved.pos) || 0,
+      startedAt: Number(saved.startedAt) || Date.now(),
+      deadline: Number(saved.deadline) || Date.now(),
+    };
+  }
+
+  function persistExam() {
+    writeJson(EXAM_KEY, {
+      ids: exam.questions.map((q) => q.id),
+      answers: exam.answers,
+      pos: exam.pos,
+      startedAt: exam.startedAt,
+      deadline: exam.deadline,
+    });
+  }
+
+  function secondsLeft() {
+    return Math.max(0, Math.round((exam.deadline - Date.now()) / 1000));
+  }
+
+  function formatDate(stamp) {
+    try {
+      return new Date(stamp).toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function renderExamCard() {
+    const minutes = Math.round(Core.EXAM.durationSec / 60);
+    const saved = loadSavedExam();
+    const history = loadExamHistory();
+    const passedCount = history.filter((r) => r.passed).length;
+
+    const startButton = saved
+      ? el('button', { class: 'primary', onclick: resumeExam }, `Продолжить экзамен`)
+      : el('button', { class: 'primary', onclick: startExam }, 'Начать экзамен');
+
+    const card = el('div', { class: 'card exam-card' }, [
+      el('div', { class: 'row spread' }, [
+        el('div', { class: 'grow' }, [
+          el('h2', { text: 'Режим экзамена' }),
+          el('p', { class: 'muted', style: 'margin:0' }, [
+            `${Core.EXAM.questionCount} вопросов — по одному из каждой темы, ${minutes} минут, ` +
+              `для зачёта нужно ${Core.EXAM.passScore} верных. Ответы покажут только в конце.`,
+          ]),
+        ]),
+        el('div', { class: 'row' }, [
+          saved && el('button', { class: 'small ghost', onclick: abandonSavedExam }, 'Начать заново'),
+          startButton,
+        ]),
+      ]),
+    ]);
+
+    if (history.length) {
+      const recent = history.slice(0, 5);
+      card.appendChild(
+        el('div', { class: 'exam-history' }, [
+          el('div', { class: 'muted' }, [
+            `Попыток: ${history.length}, сдано: ${passedCount}. Последние:`,
+          ]),
+          el(
+            'ul',
+            {},
+            recent.map((r) =>
+              el('li', {}, [
+                el('span', { class: `pill ${r.passed ? 'ok' : 'bad'}`, text: r.passed ? 'Сдано' : 'Не сдано' }),
+                ` ${r.correct} из ${r.total} · ${Core.formatTime(r.seconds)} · ${formatDate(r.at)}`,
+              ]),
+            ),
+          ),
+        ]),
+      );
+    }
+    return card;
+  }
+
+  function startExam() {
+    const questions = Core.buildExam(DATA.categories, questionsByCategory);
+    if (!questions.length) {
+      window.alert('Не удалось собрать билет: в банке нет вопросов.');
+      return;
+    }
+    exam.questions = questions;
+    exam.answers = questions.map(() => []);
+    exam.pos = 0;
+    exam.startedAt = Date.now();
+    exam.deadline = exam.startedAt + Core.EXAM.durationSec * 1000;
+    beginExam();
+  }
+
+  function resumeExam() {
+    const saved = loadSavedExam();
+    if (!saved) {
+      renderHome();
+      return;
+    }
+    Object.assign(exam, saved);
+    exam.pos = Math.min(Math.max(0, exam.pos), exam.questions.length - 1);
+    while (exam.answers.length < exam.questions.length) exam.answers.push([]);
+    if (secondsLeft() <= 0) {
+      exam.active = true;
+      finishExam(true);
+      return;
+    }
+    beginExam();
+  }
+
+  function abandonSavedExam() {
+    if (!window.confirm('Удалить незавершённый экзамен и начать новый?')) return;
+    writeJson(EXAM_KEY, null);
+    startExam();
+  }
+
+  function beginExam() {
+    exam.active = true;
+    session.question = null;
+    persistExam();
+    stopExamTimer();
+    exam.timerId = window.setInterval(tickExam, 1000);
+    renderExam();
+  }
+
+  function stopExamTimer() {
+    if (exam.timerId) window.clearInterval(exam.timerId);
+    exam.timerId = null;
+  }
+
+  function tickExam() {
+    const left = secondsLeft();
+    const timer = document.getElementById('exam-timer');
+    if (timer) {
+      timer.textContent = Core.formatTime(left);
+      timer.classList.toggle('low', left <= 5 * 60);
+    }
+    if (left <= 0) finishExam(true);
+  }
+
+  function answeredCount() {
+    return exam.answers.filter((a) => a.length > 0).length;
+  }
+
+  function renderExam() {
+    clearRoot();
+    const question = exam.questions[exam.pos];
+    const total = exam.questions.length;
+    const selected = exam.answers[exam.pos];
+    const left = secondsLeft();
+
+    const head = el('div', { class: 'session__head' }, [
+      el('div', { class: 'row spread' }, [
+        el('div', { class: 'grow' }, [
+          el('div', { class: 'category__title', text: 'Экзамен' }),
+          el('div', { class: 'session__meta' }, [
+            el('span', { text: `Вопрос ${exam.pos + 1} из ${total} · отвечено ${answeredCount()}` }),
+          ]),
+        ]),
+        el('span', {
+          id: 'exam-timer',
+          class: `exam-timer${left <= 5 * 60 ? ' low' : ''}`,
+          title: 'Осталось времени',
+          text: Core.formatTime(left),
+        }),
+        el('button', { class: 'ghost small', onclick: confirmLeaveExam, title: 'Прервать (Esc)' }, 'Прервать'),
+      ]),
+      el(
+        'div',
+        { class: 'exam-nav', role: 'navigation', 'aria-label': 'Вопросы билета' },
+        exam.questions.map((q, i) =>
+          el(
+            'button',
+            {
+              type: 'button',
+              class: `exam-nav__item${exam.answers[i].length ? ' is-answered' : ''}${i === exam.pos ? ' is-current' : ''}`,
+              'aria-current': i === exam.pos ? 'true' : false,
+              title: q.categoryTitle,
+              onclick: () => goToExamQuestion(i),
+            },
+            String(i + 1),
+          ),
+        ),
+      ),
+    ]);
+    root.appendChild(head);
+
+    const card = el('div', { class: 'card' }, [
+      el('div', { class: 'question__note', text: question.categoryTitle }),
+      el('div', { class: 'question', text: question.text }),
+      question.multi &&
+        el('div', { class: 'question__note', text: 'Несколько правильных вариантов — отметьте все.' }),
+    ]);
+    const options = el('div', { class: 'options' });
+    question.options.forEach((option, index) => {
+      const picked = selected.includes(index);
+      options.appendChild(
+        el(
+          'button',
+          {
+            class: `option${picked ? ' is-picked' : ''}`,
+            type: 'button',
+            'aria-pressed': picked ? 'true' : 'false',
+            onclick: () => toggleExamOption(index),
+          },
+          [
+            el('span', { class: 'option__key', text: String(index + 1) }),
+            el('span', { class: 'option__text', text: option.text }),
+          ],
+        ),
+      );
+    });
+    card.appendChild(options);
+    root.appendChild(card);
+
+    const isLast = exam.pos >= total - 1;
+    root.appendChild(
+      el('div', { class: 'session__foot' }, [
+        el('button', { onclick: () => goToExamQuestion(exam.pos - 1), disabled: exam.pos === 0 }, 'Назад'),
+        el('span', { class: 'muted', html: '<kbd>1</kbd>…<kbd>9</kbd> — ответ, <kbd>←</kbd> <kbd>→</kbd> — вопросы' }),
+        isLast
+          ? el('button', { class: 'primary', onclick: confirmFinishExam }, 'Завершить')
+          : el('button', { class: 'primary', onclick: () => goToExamQuestion(exam.pos + 1) }, 'Далее'),
+      ]),
+    );
+    if (!isLast) {
+      root.appendChild(
+        el('div', { class: 'toolbar', style: 'justify-content:flex-end' }, [
+          el('button', { class: 'small ghost', onclick: confirmFinishExam }, 'Завершить досрочно'),
+        ]),
+      );
+    }
+  }
+
+  function toggleExamOption(index) {
+    const question = exam.questions[exam.pos];
+    const current = exam.answers[exam.pos];
+    if (question.multi) {
+      const at = current.indexOf(index);
+      if (at >= 0) current.splice(at, 1);
+      else current.push(index);
+    } else {
+      exam.answers[exam.pos] = current.length === 1 && current[0] === index ? [] : [index];
+    }
+    persistExam();
+    renderExam();
+  }
+
+  function goToExamQuestion(index) {
+    if (index < 0 || index >= exam.questions.length) return;
+    exam.pos = index;
+    persistExam();
+    renderExam();
+    window.scrollTo(0, 0);
+  }
+
+  function confirmFinishExam() {
+    const missing = exam.questions.length - answeredCount();
+    const text = missing
+      ? `Без ответа ${missing} ${plural(missing, 'вопрос', 'вопроса', 'вопросов')} — они будут засчитаны как неверные. Завершить экзамен?`
+      : 'Завершить экзамен и посмотреть результат?';
+    if (window.confirm(text)) finishExam(false);
+  }
+
+  function confirmLeaveExam() {
+    if (!window.confirm('Прервать экзамен? Результат не будет засчитан.')) return;
+    stopExamTimer();
+    exam.active = false;
+    writeJson(EXAM_KEY, null);
+    renderHome();
+  }
+
+  function finishExam(timeUp) {
+    if (!exam.active) return;
+    stopExamTimer();
+    exam.active = false;
+
+    const result = Core.gradeExam(exam.questions, exam.answers);
+    const finishedAt = Math.min(Date.now(), exam.deadline);
+    const seconds = Math.round((finishedAt - exam.startedAt) / 1000);
+
+    // Ответы экзамена попадают в общий прогресс: ошибки появятся в «Ошибки» по темам.
+    result.items.forEach((item) => Core.recordAnswer(progress, item.id, item.ok));
+    saveProgress(progress);
+
+    const history = loadExamHistory();
+    history.unshift({
+      at: Date.now(),
+      correct: result.correct,
+      total: result.total,
+      passed: result.passed,
+      seconds,
+      timeUp: Boolean(timeUp),
+    });
+    writeJson(EXAM_HISTORY_KEY, history.slice(0, EXAM_HISTORY_LIMIT));
+    writeJson(EXAM_KEY, null);
+
+    renderExamResult(result, seconds, timeUp);
+  }
+
+  function renderExamResult(result, seconds, timeUp) {
+    clearRoot();
+    window.scrollTo(0, 0);
+
+    root.appendChild(
+      el('div', { class: 'top' }, [
+        el('div', { class: 'brand' }, [el('strong', { text: 'Экзамен' }), el('span', { text: 'результат' })]),
+      ]),
+    );
+
+    root.appendChild(
+      el('div', { class: `exam-result ${result.passed ? 'ok' : 'bad'}` }, [
+        el('b', { text: result.passed ? 'Сдано' : 'Не сдано' }),
+        el('span', {
+          text:
+            `${result.correct} из ${result.total} верных, нужно ${result.need}` +
+            (timeUp ? ' · время вышло' : ''),
+        }),
+      ]),
+    );
+
+    const wrong = result.items.filter((i) => i.answered && !i.ok).length;
+    const skipped = result.items.filter((i) => !i.answered).length;
+    root.appendChild(
+      el('div', { class: 'summary__grid' }, [
+        el('div', { class: 'stat' }, [el('b', { text: String(result.correct) }), 'верно']),
+        el('div', { class: 'stat' }, [el('b', { text: String(wrong) }), 'ошибок']),
+        el('div', { class: 'stat' }, [el('b', { text: String(skipped) }), 'без ответа']),
+        el('div', { class: 'stat' }, [el('b', { text: Core.formatTime(seconds) }), 'затрачено']),
+      ]),
+    );
+
+    root.appendChild(
+      el('div', { class: 'toolbar', style: 'margin-top:0' }, [
+        el('button', { class: 'primary', onclick: startExam }, 'Новый экзамен'),
+        el('button', { class: 'ghost', onclick: renderHome }, 'К списку тем'),
+      ]),
+    );
+
+    root.appendChild(el('h2', { style: 'margin:24px 0 12px', text: 'Разбор билета' }));
+    const list = el('div', { class: 'categories' });
+    result.items.forEach((item, i) => {
+      const question = exam.questions[i];
+      const correct = Core.correctIndexes(question);
+      const status = item.ok ? 'Верно' : item.answered ? 'Неверно' : 'Без ответа';
+      const options = el('div', { class: 'options locked' });
+      question.options.forEach((option, index) => {
+        const chosen = item.selected.includes(index);
+        let cls = 'option';
+        if (correct.includes(index)) cls += ' is-correct';
+        else if (chosen) cls += ' is-chosen-wrong';
+        options.appendChild(
+          el('div', { class: cls }, [
+            el('span', { class: 'option__key', text: String(index + 1) }),
+            el('span', { class: 'option__text', text: option.text }),
+          ]),
+        );
+      });
+      list.appendChild(
+        el('div', { class: 'card' }, [
+          el('div', { class: 'row spread' }, [
+            el('div', { class: 'question__note', style: 'margin:0', text: `${i + 1}. ${question.categoryTitle}` }),
+            el('span', { class: `pill ${item.ok ? 'ok' : 'bad'}`, text: status }),
+          ]),
+          el('div', { class: 'question', text: question.text }),
+          options,
+        ]),
+      );
+    });
+    root.appendChild(list);
+  }
+
+  function onExamKeyDown(event) {
+    if (event.key === 'Escape') {
+      confirmLeaveExam();
+      return;
+    }
+    if (event.key === 'ArrowRight' || event.key === 'Enter') {
+      event.preventDefault();
+      if (exam.pos < exam.questions.length - 1) goToExamQuestion(exam.pos + 1);
+      else if (event.key === 'Enter') confirmFinishExam();
+      return;
+    }
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      goToExamQuestion(exam.pos - 1);
+      return;
+    }
+    const digit = Number(event.key);
+    if (Number.isInteger(digit) && digit >= 1 && digit <= 9) {
+      const question = exam.questions[exam.pos];
+      if (digit - 1 < question.options.length) {
+        event.preventDefault();
+        toggleExamOption(digit - 1);
+      }
+    }
   }
 
   // --- запуск ---

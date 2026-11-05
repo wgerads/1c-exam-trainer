@@ -130,7 +130,7 @@ button.small { padding: 6px 10px; font-size: 14px; }
 
 /* --- Экран тем --- */
 
-.categories { display: grid; gap: 12px; }
+.categories { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 
 .category {
   display: grid;
@@ -179,7 +179,7 @@ button.small { padding: 6px 10px; font-size: 14px; }
 .banner.ok { background: var(--ok-soft); color: var(--ok); }
 .banner.bad { background: var(--bad-soft); color: var(--bad); }
 
-.question { font-size: 19px; font-weight: 600; margin: 6px 0 4px; }
+.question { font-size: 19px; font-weight: 600; margin: 6px 0 4px; overflow-wrap: anywhere; }
 .question__note { color: var(--ink-muted); font-size: 13px; margin-bottom: 10px; }
 
 .options { display: grid; gap: 10px; margin-top: 12px; }
@@ -208,7 +208,7 @@ button.small { padding: 6px 10px; font-size: 14px; }
   display: grid;
   place-items: center;
 }
-.option__text { flex: 1 1 auto; }
+.option__text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
 
 .option.is-correct { background: var(--ok-soft); border-color: var(--ok); }
 .option.is-correct .option__key { background: var(--ok); color: #fff; }
@@ -225,6 +225,58 @@ button.small { padding: 6px 10px; font-size: 14px; }
 .summary__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 14px 0; }
 .stat { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
 .stat b { display: block; font-size: 24px; }
+
+/* --- Режим экзамена --- */
+
+.exam-card { margin-bottom: 16px; border-color: var(--brand); }
+.exam-history { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; }
+.exam-history ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+
+.pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+
+.exam-timer {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 18px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.exam-timer.low { color: var(--bad); border-color: var(--bad); background: var(--bad-soft); }
+
+.exam-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.exam-nav__item {
+  min-width: 36px;
+  padding: 6px 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.exam-nav__item.is-answered { background: var(--brand-soft); border-color: var(--brand); color: var(--brand-dark); }
+.exam-nav__item.is-current { box-shadow: inset 0 0 0 2px var(--brand); }
+
+.exam-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 18px;
+  border-radius: var(--radius);
+  text-align: center;
+}
+.exam-result b { font-size: 28px; }
+.exam-result.ok { background: var(--ok-soft); color: var(--ok); }
+.exam-result.bad { background: var(--bad-soft); color: var(--bad); }
 
 /* --- Мелкое --- */
 
@@ -254,6 +306,9 @@ kbd {
   .category__actions { justify-content: flex-start; }
   .category__actions button { flex: 1 1 auto; }
   .session__foot button { flex: 1 1 auto; }
+  .session__foot .muted { display: none; }
+  .exam-nav { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .exam-nav__item { min-width: 0; padding: 6px 0; }
   .option { padding: 14px; }
   button { padding: 12px 16px; }
   .legend { gap: 8px; }

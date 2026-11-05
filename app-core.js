@@ -119,7 +119,69 @@
     return total ? Math.min(100, Math.round((done / total) * 100)) : 0;
   }
 
+  // --- Режим экзамена ---
+
+  /**
+   * Параметры как на реальном тестировании 1С:Профессионал:
+   * 14 вопросов (по одному из каждой темы), 30 минут, зачёт от 12 верных.
+   */
+  const EXAM = { durationSec: 30 * 60, passScore: 12, questionCount: 14 };
+
+  /** Вопрос ссылается на картинку, которой нет в банке, — на экзамене его не даём. */
+  function needsImage(question) {
+    return /рисун|картинк/i.test(question.text || '');
+  }
+
+  /**
+   * Билет: по одному случайному вопросу из каждой темы, в порядке тем.
+   * byCategory — Map или объект { categoryId: [вопросы] }.
+   */
+  function buildExam(categories, byCategory, rng) {
+    const random = rng || Math.random;
+    const out = [];
+    for (const category of categories || []) {
+      const pool =
+        (byCategory instanceof Map ? byCategory.get(category.id) : byCategory[category.id]) || [];
+      const usable = pool.filter((q) => !needsImage(q));
+      const source = usable.length ? usable : pool;
+      if (!source.length) continue;
+      out.push(source[Math.floor(random() * source.length)]);
+    }
+    return out;
+  }
+
+  /** Сколько верных нужно для зачёта при данном размере билета (12 из 14 — та же доля). */
+  function passScoreFor(total) {
+    if (total === EXAM.questionCount) return EXAM.passScore;
+    return Math.ceil((total * EXAM.passScore) / EXAM.questionCount);
+  }
+
+  /** Итог экзамена. answers[i] — массив выбранных индексов для i-го вопроса. */
+  function gradeExam(questions, answers) {
+    let correct = 0;
+    const items = questions.map((question, i) => {
+      const selected = (answers && answers[i]) || [];
+      const ok = selected.length > 0 && checkAnswer(question, selected);
+      if (ok) correct += 1;
+      return { id: question.id, selected: selected.slice(), answered: selected.length > 0, ok };
+    });
+    const need = passScoreFor(questions.length);
+    return { total: questions.length, correct, need, passed: correct >= need, items };
+  }
+
+  /** 125 → «02:05». */
+  function formatTime(seconds) {
+    const s = Math.max(0, Math.floor(seconds));
+    return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  }
+
   return {
+    EXAM,
+    needsImage,
+    buildExam,
+    passScoreFor,
+    gradeExam,
+    formatTime,
     STORAGE_VERSION,
     correctIndexes,
     checkAnswer,
