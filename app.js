@@ -8,7 +8,6 @@
   const Core = window.AppCore;
   const DATA = window.EXAM_DATA;
   const STORAGE_KEY = 'exam1c.progress.v1';
-  const MAX_REQUEUE_PER_QUESTION = 2; // сколько раз возвращать вопрос в очередь за сессию
   const EXAM_KEY = 'exam1c.exam.current.v1'; // незавершённый экзамен (переживает перезагрузку)
   const EXAM_HISTORY_KEY = 'exam1c.exam.history.v1';
   const EXAM_HISTORY_LIMIT = 20;
@@ -234,7 +233,7 @@
     question: null,
     selected: [],
     answered: false,
-    attempts: new Map(),
+    wrong: [], // вопросы, отвеченные неверно в этом круге, — для «Перерешать ошибки»
     answeredIds: new Set(),
     stats: { answers: 0, correct: 0, wrong: 0 },
   };
@@ -432,9 +431,13 @@
 
   // --- Экран: сессия ---
 
-  function startSession(categoryId, mode) {
-    const all = questionsOf(categoryId);
-    const queue = Core.buildQueue(all, progress, mode);
+  /**
+   * Один круг по вопросам: каждый вопрос показывается ровно один раз, ошибки
+   * в очередь не возвращаются. Перерешать их можно с экрана итогов.
+   * retryList — явный список вопросов (ошибки прошлого круга).
+   */
+  function startSession(categoryId, mode, retryList) {
+    const queue = retryList ? Core.shuffle(retryList) : Core.buildQueue(questionsOf(categoryId), progress, mode);
     if (!queue.length) {
       window.alert(
         mode === 'errors'
@@ -448,7 +451,8 @@
     session.categoryId = categoryId;
     session.queue = queue;
     session.pos = 0;
-    session.attempts = new Map();
+    session.wrong = [];
+    session.round = retryList ? (session.round || 1) + 1 : 1;
     session.answeredIds = new Set();
     session.stats = { answers: 0, correct: 0, wrong: 0 };
     nextQuestion();
@@ -483,7 +487,11 @@
       el('div', { class: 'row spread' }, [
         el('div', { class: 'grow' }, [
           el('div', { class: 'category__title', text: categoryTitle() }),
-          el('div', { class: 'session__meta' }, [remainingEl, statsEl]),
+          el('div', { class: 'session__meta' }, [
+            session.round > 1 && el('span', { text: 'перерешивание ошибок' }),
+            remainingEl,
+            statsEl,
+          ]),
         ]),
         el('button', { class: 'ghost small', onclick: exitSession, title: 'Выйти (Esc)' }, 'Выйти'),
       ]),
@@ -621,15 +629,8 @@
     Core.recordAnswer(progress, question.id, isCorrect);
     saveProgress(progress);
 
-    if (isCorrect) {
-      session.answeredIds.add(question.id);
-    } else {
-      const attempts = (session.attempts.get(question.id) || 0) + 1;
-      session.attempts.set(question.id, attempts);
-      if (attempts <= MAX_REQUEUE_PER_QUESTION) {
-        session.queue.push(question); // вернём вопрос в конец очереди
-      }
-    }
+    session.answeredIds.add(question.id);
+    if (!isCorrect) session.wrong.push(question);
 
     const correct = Core.correctIndexes(question);
     root.querySelector('.options').classList.add('locked');
@@ -763,11 +764,15 @@
         el('div', { class: 'stat' }, [el('b', { text: String(stats.answers) }), 'всего ответов']),
       ]),
       el('p', { class: 'muted' }, [
-        'Прогресс сохранён. Вопросы, отвеченные неверно, вернулись в очередь этой сессии ' +
-          `(не более ${MAX_REQUEUE_PER_QUESTION} раз каждый) и остались помеченными как «с ошибкой».`,
+        session.wrong.length
+          ? 'Прогресс сохранён. Вопросы с ошибками помечены и перечислены ниже — их можно перерешать отдельным кругом.'
+          : 'Прогресс сохранён. Ошибок в этом круге нет.',
       ]),
     ]);
     root.appendChild(card);
+
+    const wrong = session.wrong.slice();
+    const retry = () => startSession(session.categoryId, 'all', wrong);
 
     const summary = Core.progressFor(questionsOf(session.categoryId), progress);
     root.appendChild(
@@ -777,12 +782,43 @@
     );
 
     const foot = el('div', { class: 'toolbar' }, [
-      summary.errors > 0 &&
-        el('button', { class: 'primary', onclick: () => startSession(session.categoryId, 'errors') }, `Повторить ошибки (${summary.errors})`),
-      el('button', { onclick: () => startSession(session.categoryId, 'all') }, 'Пройти тему заново'),
+      wrong.length > 0 && el('button', { class: 'primary', onclick: retry }, `Перерешать ошибки (${wrong.length})`),
+      // все ошибки темы, включая прошлые сессии, — если их больше, чем в этом круге
+      summary.errors > wrong.length &&
+        el('button', { onclick: () => startSession(session.categoryId, 'errors') }, `Все ошибки (${summary.errors})`),
+      el('button', { onclick: () => startSession(session.categoryId, 'all') }, 'Пройти заново'),
       el('button', { class: 'ghost', onclick: renderHome }, 'К списку тем'),
     ]);
     root.appendChild(foot);
+
+    if (wrong.length) {
+      root.appendChild(el('h2', { style: 'margin:24px 0 12px', text: 'Ошибки этого круга' }));
+      const list = el('div', { class: 'categories' });
+      for (const question of wrong) {
+        const options = el('div', { class: 'options locked' });
+        question.options.forEach((option, index) => {
+          if (!option.correct) return;
+          options.appendChild(
+            el('div', { class: 'option is-correct' }, [
+              el('span', { class: 'option__key', text: String(index + 1) }),
+              el('span', { class: 'option__text', text: option.text }),
+            ]),
+          );
+        });
+        list.appendChild(
+          el('div', { class: 'card' }, [
+            el('div', { class: 'question__head' }, [
+              el('div', { class: 'question', text: question.text }),
+              favoriteButton(question),
+            ]),
+            questionImage(question),
+            options,
+            explanationBlock(question),
+          ]),
+        );
+      }
+      root.appendChild(list);
+    }
   }
 
   // --- Просмотр вопросов темы ---
