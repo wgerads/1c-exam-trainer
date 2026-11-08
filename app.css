@@ -670,6 +670,8 @@ kbd {
   }
   .session__foot:not(:has(button:not(.hidden))) { display: none; }
   .session__foot button { flex: 1 1 auto; }
+  .session__foot .row { flex: 2 1 auto; flex-wrap: nowrap; }
+  .session__foot button.primary { min-width: 0; }
   .session__foot .muted { display: none; }
   .exam-nav { display: grid; grid-template-columns: repeat(7, 1fr); }
   .exam-nav__item { min-width: 0; padding: 7px 0; }

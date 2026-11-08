@@ -233,6 +233,7 @@
     question: null,
     selected: [],
     answered: false,
+    entries: [], // entries[i] — состояние i-го вопроса очереди: { selected, answered, ok }
     wrong: [], // вопросы, отвеченные неверно в этом круге, — для «Перерешать ошибки»
     answeredIds: new Set(),
     stats: { answers: 0, correct: 0, wrong: 0 },
@@ -451,22 +452,44 @@
     session.categoryId = categoryId;
     session.queue = queue;
     session.pos = 0;
+    session.entries = queue.map(() => ({ selected: [], answered: false, ok: false }));
     session.wrong = [];
     session.round = retryList ? (session.round || 1) + 1 : 1;
     session.answeredIds = new Set();
     session.stats = { answers: 0, correct: 0, wrong: 0 };
-    nextQuestion();
+    showQuestion();
   }
 
-  function nextQuestion() {
-    if (session.pos >= session.queue.length) {
-      renderSummary();
-      return;
-    }
+  function showQuestion() {
+    const entry = session.entries[session.pos];
     session.question = session.queue[session.pos];
-    session.selected = [];
-    session.answered = false;
+    session.selected = entry.selected; // тот же массив: отметки многоответного вопроса переживают листание
+    session.answered = entry.answered;
     renderSession();
+  }
+
+  /** Листание внутри круга. Отвеченный вопрос открывается с ответом и второй раз не засчитывается. */
+  function goToQuestion(pos) {
+    if (pos < 0 || pos >= session.queue.length) return;
+    session.pos = pos;
+    showQuestion();
+    window.scrollTo(0, 0);
+  }
+
+  function goForward() {
+    if (session.pos + 1 >= session.queue.length) renderSummary();
+    else goToQuestion(session.pos + 1);
+  }
+
+  function updateSessionMeta() {
+    const total = session.queue.length;
+    const done = session.answeredIds.size;
+    if (session.metaEls) {
+      session.metaEls.remainingEl.textContent = `Осталось ${total - done}`;
+      session.metaEls.statsEl.textContent = `верно ${session.stats.correct} · ошибок ${session.stats.wrong}`;
+    }
+    const sessionBar = document.getElementById('session-bar');
+    if (sessionBar) sessionBar.style.width = `${total ? Math.round((done / total) * 100) : 0}%`;
   }
 
   function categoryTitle() {
@@ -479,8 +502,8 @@
     const question = session.question;
     const total = session.queue.length;
 
-    const remainingEl = el('span', { text: `Осталось ${total - session.pos}` });
-    const statsEl = el('span', { text: `верно ${session.stats.correct} · ошибок ${session.stats.wrong}` });
+    const remainingEl = el('span');
+    const statsEl = el('span');
     session.metaEls = { remainingEl, statsEl };
 
     const head = el('div', { class: 'session__head' }, [
@@ -489,6 +512,7 @@
           el('div', { class: 'category__title', text: categoryTitle() }),
           el('div', { class: 'session__meta' }, [
             session.round > 1 && el('span', { text: 'перерешивание ошибок' }),
+            el('span', { text: `Вопрос ${session.pos + 1} из ${total}` }),
             remainingEl,
             statsEl,
           ]),
@@ -496,10 +520,7 @@
         el('button', { class: 'ghost small', onclick: exitSession, title: 'Выйти (Esc)' }, 'Выйти'),
       ]),
       el('div', { class: 'bar', style: 'margin-top:10px' }, [
-        el('i', {
-          id: 'session-bar',
-          style: `width:${total ? Math.round((session.answeredIds.size / total) * 100) : 0}%`,
-        }),
+        el('i', { id: 'session-bar' }),
       ]),
     ]);
     root.appendChild(head);
@@ -568,19 +589,25 @@
     }
     root.appendChild(card);
 
-    const checkButton = el(
-      'button',
-      { class: 'primary', id: 'action', onclick: onPrimaryAction },
-      question.multi && !session.answered ? 'Проверить' : 'Дальше',
-    );
-    // До ответа кнопка не нужна: в одиночном вопросе ответ даёт клик по варианту,
-    // в многоответном она появляется после первого выбора.
-    checkButton.classList.add('hidden');
+    // «Проверить» нужна только многоответному вопросу и появляется после первого выбора.
+    const checkButton = el('button', { class: 'primary hidden', id: 'check', onclick: answer }, 'Проверить');
+    const isLast = session.pos + 1 >= total;
     const foot = el('div', { class: 'session__foot' }, [
-      el('span', { class: 'muted', html: 'Ответ: <kbd>1</kbd>…<kbd>9</kbd>, дальше — <kbd>Enter</kbd>' }),
-      checkButton,
+      el('button', { id: 'prev', onclick: () => goToQuestion(session.pos - 1), disabled: session.pos === 0 }, '← Назад'),
+      el('span', {
+        class: 'muted session__keys',
+        html: '<kbd>1</kbd>…<kbd>9</kbd> — ответ, <kbd>←</kbd> <kbd>→</kbd> — листать, <kbd>Enter</kbd> — дальше',
+      }),
+      el('div', { class: 'row' }, [
+        checkButton,
+        el('button', { id: 'action', onclick: goForward }, isLast ? 'Итоги' : 'Вперёд →'),
+      ]),
     ]);
     root.appendChild(foot);
+
+    updateSessionMeta();
+    if (session.answered) paintAnswered(question, session.entries[session.pos].ok);
+    else renderSelectionState();
   }
 
   function onOptionClick(index) {
@@ -604,23 +631,18 @@
       node.classList.toggle('is-picked', picked);
       node.setAttribute('aria-pressed', picked ? 'true' : 'false');
     });
-    const action = document.getElementById('action');
-    if (action) action.classList.toggle('hidden', session.selected.length === 0);
-  }
-
-  function onPrimaryAction() {
-    if (!session.answered) {
-      if (!session.selected.length) return;
-      answer();
-    } else {
-      session.pos += 1;
-      nextQuestion();
-    }
+    const check = document.getElementById('check');
+    if (check) check.classList.toggle('hidden', session.selected.length === 0);
   }
 
   function answer() {
+    if (session.answered || !session.selected.length) return;
     const question = session.question;
     const isCorrect = Core.checkAnswer(question, session.selected);
+    const entry = session.entries[session.pos];
+    entry.selected = session.selected;
+    entry.answered = true;
+    entry.ok = isCorrect;
     session.answered = true;
     session.stats.answers += 1;
     if (isCorrect) session.stats.correct += 1;
@@ -632,6 +654,13 @@
     session.answeredIds.add(question.id);
     if (!isCorrect) session.wrong.push(question);
 
+    paintAnswered(question, isCorrect);
+    updateSessionMeta();
+    document.getElementById('action').focus();
+  }
+
+  /** Показывает на карточке результат ответа: и сразу после него, и при возврате к вопросу. */
+  function paintAnswered(question, isCorrect) {
     const correct = Core.correctIndexes(question);
     root.querySelector('.options').classList.add('locked');
     root.querySelectorAll('.option').forEach((node) => {
@@ -655,21 +684,8 @@
     const explanation = explanationBlock(question);
     if (explanation) root.querySelector('.options').after(explanation);
 
-    // Обновляем счётчики и полосу сразу, не дожидаясь следующего вопроса.
-    if (session.metaEls) {
-      session.metaEls.remainingEl.textContent = `Осталось ${Math.max(0, session.queue.length - session.pos - 1)}`;
-      session.metaEls.statsEl.textContent = `верно ${session.stats.correct} · ошибок ${session.stats.wrong}`;
-    }
-    const sessionBar = document.getElementById('session-bar');
-    if (sessionBar) {
-      const total = session.queue.length || 1;
-      sessionBar.style.width = `${Math.min(100, Math.round((session.answeredIds.size / total) * 100))}%`;
-    }
-
-    const action = document.getElementById('action');
-    action.textContent = session.pos + 1 >= session.queue.length ? 'Итоги' : 'Дальше';
-    action.classList.remove('hidden');
-    action.focus();
+    document.getElementById('check').classList.add('hidden');
+    document.getElementById('action').classList.add('primary');
   }
 
   function onKeyDown(event) {
@@ -696,11 +712,15 @@
     }
     if (event.key === 'Enter') {
       event.preventDefault();
-      if (session.answered) {
-        if (!document.getElementById('action').classList.contains('hidden')) onPrimaryAction();
-      } else if (session.selected.length) {
-        answer();
-      }
+      // На экране итогов тоже есть .options (список ошибок), но кнопки #action там нет.
+      if (!session.answered) answer();
+      else if (document.getElementById('action')) goForward();
+      return;
+    }
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      if (!document.getElementById('action')) return;
+      event.preventDefault();
+      goToQuestion(session.pos + (event.key === 'ArrowLeft' ? -1 : 1));
       return;
     }
     if (['f', 'F', 'а', 'А'].includes(event.key)) {
@@ -745,6 +765,7 @@
     const stats = session.stats;
     const answered = stats.correct + stats.wrong;
     const percent = answered ? Math.round((stats.correct / answered) * 100) : 0;
+    const skipped = session.queue.length - session.answeredIds.size;
 
     root.appendChild(
       el('div', { class: 'top' }, [
@@ -767,6 +788,7 @@
         session.wrong.length
           ? 'Прогресс сохранён. Вопросы с ошибками помечены и перечислены ниже — их можно перерешать отдельным кругом.'
           : 'Прогресс сохранён. Ошибок в этом круге нет.',
+        skipped > 0 && ` Без ответа осталось ${skipped} ${plural(skipped, 'вопрос', 'вопроса', 'вопросов')}.`,
       ]),
     ]);
     root.appendChild(card);
