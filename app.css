@@ -684,7 +684,7 @@ kbd {
 
 .question__head { display: flex; align-items: flex-start; gap: 10px; }
 .question__head .question { flex: 1 1 auto; min-width: 0; }
-.fav-btn {
+.fav-btn, .flag-btn {
   flex: 0 0 auto;
   width: 36px;
   height: 36px;
@@ -696,8 +696,62 @@ kbd {
   background: transparent;
   border: 1px solid transparent;
 }
-.fav-btn:hover { background: var(--surface-3); }
+.fav-btn:hover, .flag-btn:hover { background: var(--surface-3); }
 .fav-btn.is-on { color: var(--warn); }
 .fav-star { color: var(--warn); }
 .favorites-card { margin-top: 16px; }
 .favorites-card .category__meta { overflow-wrap: anywhere; }
+
+/* --- Пометки об ошибках --- */
+
+.question-tools { flex: 0 0 auto; display: inline-flex; gap: 2px; }
+.flag-btn.is-on, .flag-mark { color: var(--bad); }
+.flag-dialog {
+  width: min(480px, calc(100vw - 32px));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+.flag-dialog::backdrop { background: rgba(10, 12, 18, 0.55); }
+.flag-dialog h2 { margin: 0 0 8px; }
+.flag-dialog__question { margin: 0 0 12px; max-height: 6.5em; overflow: auto; }
+.flag-dialog__text {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+}
+
+/* --- Карточки главной: «На сегодня», незавершённый круг, прогноз --- */
+
+.home-card { margin-top: 16px; }
+.home-card + .exam-card { margin-top: 16px; }
+.resume-card { border-color: var(--brand); }
+.forecast h2 { margin: 0 0 8px; }
+.forecast__head { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+.forecast__score { font-size: 34px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.forecast__label { margin-top: 14px; font-weight: 650; }
+.forecast__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.forecast__row .bar { grid-column: 1 / -1; }
+.forecast__title { font-weight: 600; overflow-wrap: anywhere; }
+.forecast__percent { min-width: 3ch; text-align: right; font-variant-numeric: tabular-nums; }
+.forecast__more { margin-top: 12px; }
+.forecast__more summary { cursor: pointer; font-weight: 600; color: var(--ink-muted); }
+.forecast__note { margin: 12px 0 0; font-size: 13px; }

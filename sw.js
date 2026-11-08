@@ -12,7 +12,7 @@
  * приложение при этом работает как обычно, только без офлайн-кэша.
  */
 
-const VERSION = '2026-11-08-session-paging';
+const VERSION = '2026-11-08-daily-forecast';
 const CACHE = `1c-trainer-${VERSION}`;
 
 const ASSETS = [

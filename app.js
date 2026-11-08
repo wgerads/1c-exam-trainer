@@ -13,6 +13,10 @@
   const EXAM_HISTORY_LIMIT = 20;
   const FAVORITES_KEY = 'exam1c.favorites.v1';
   const FAVORITES_ID = '__favorites'; // «тема» из избранных вопросов для сессии и просмотра
+  const DAILY_ID = '__daily'; // подборка «На сегодня» из всех тем
+  const FLAGS_ID = '__flags'; // вопросы с пометкой «тут ошибка»
+  const SESSION_KEY = 'exam1c.session.current.v1'; // незавершённый круг повторения
+  const FLAGS_KEY = 'exam1c.flags.v1';
 
   const root = document.getElementById('app');
   if (!Core || !DATA || !Array.isArray(DATA.questions)) {
@@ -51,6 +55,8 @@
   }
   const categoryById = new Map((DATA.categories || []).map((c) => [c.id, c]));
   categoryById.set(FAVORITES_ID, { id: FAVORITES_ID, title: 'Избранное' });
+  categoryById.set(DAILY_ID, { id: DAILY_ID, title: 'На сегодня' });
+  categoryById.set(FLAGS_ID, { id: FLAGS_ID, title: 'Вопросы с пометкой' });
   const questionById = new Map(DATA.questions.map((q) => [q.id, q]));
 
   // --- избранное ---
@@ -75,6 +81,8 @@
   /** Вопросы темы или избранного (в порядке добавления). */
   function questionsOf(categoryId) {
     if (categoryId === FAVORITES_ID) return favorites.map((id) => questionById.get(id)).filter(Boolean);
+    if (categoryId === FLAGS_ID) return Object.keys(flags).map((id) => questionById.get(id)).filter(Boolean);
+    if (categoryId === DAILY_ID) return DATA.questions;
     return questionsByCategory.get(categoryId) || [];
   }
 
@@ -101,6 +109,91 @@
       paint(toggleFavorite(question));
     });
     return button;
+  }
+
+  // --- пометки «тут ошибка в вопросе» ---
+
+  let flags = Core.normalizeFlags(readJson(FLAGS_KEY), questionById);
+  function saveFlags() {
+    writeJson(FLAGS_KEY, flags);
+  }
+
+  function flagButton(question) {
+    const button = el('button', { type: 'button', class: 'flag-btn' });
+    const paint = () => {
+      const on = Boolean(flags[question.id]);
+      button.classList.toggle('is-on', on);
+      button.textContent = on ? '⚑' : '⚐';
+      button.setAttribute('aria-pressed', on ? 'true' : 'false');
+      const label = on ? 'Изменить пометку об ошибке' : 'Пометить: тут ошибка в вопросе';
+      button.setAttribute('aria-label', label);
+      button.title = label;
+    };
+    paint();
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      openFlagDialog(question, paint);
+    });
+    return button;
+  }
+
+  /** Звёздочка и пометка рядом, в правом верхнем углу карточки вопроса. */
+  function questionTools(question) {
+    return el('span', { class: 'question-tools' }, [flagButton(question), favoriteButton(question)]);
+  }
+
+  function openFlagDialog(question, repaint) {
+    const current = flags[question.id];
+    const text = el('textarea', {
+      class: 'flag-dialog__text',
+      rows: '4',
+      maxlength: '500',
+      'aria-label': 'Что не так с вопросом',
+      placeholder: 'Например: опечатка в варианте, правильный ответ другой',
+    });
+    text.value = current ? current.note : '';
+    const close = () => dialog.close();
+    const apply = (next) => {
+      if (next) flags[question.id] = next;
+      else delete flags[question.id];
+      saveFlags();
+      close();
+      if (browse.active && browse.categoryId === FLAGS_ID) renderBrowse(FLAGS_ID);
+      else repaint();
+    };
+    const dialog = el('dialog', { class: 'flag-dialog' }, [
+      el('h2', { text: 'Что не так с вопросом?' }),
+      el('p', { class: 'muted flag-dialog__question', text: question.text }),
+      text,
+      el('div', { class: 'row' }, [
+        el('button', { class: 'primary', onclick: () => apply({ note: text.value.trim(), at: Date.now() }) }, 'Сохранить'),
+        current && el('button', { onclick: () => apply(null) }, 'Снять пометку'),
+        el('button', { class: 'ghost', onclick: close }, 'Отмена'),
+      ]),
+    ]);
+    dialog.addEventListener('close', () => dialog.remove());
+    document.body.appendChild(dialog);
+    dialog.showModal();
+    text.focus();
+  }
+
+  function saveFile(name, content, type) {
+    const blob = new Blob([content], { type });
+    const link = el('a', { href: URL.createObjectURL(blob), download: name });
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  /** Текстовый отчёт по пометкам, чтобы по нему исправить банк. */
+  function downloadFlagsReport() {
+    const text = questionsOf(FLAGS_ID)
+      .map((q) => {
+        const answers = q.options.map((o, i) => `  ${o.correct ? '+' : ' '} ${i + 1}. ${o.text}`).join('\n');
+        return `[${q.id}] ${q.categoryTitle}\n${q.text}\n${answers}\nЗаметка: ${flags[q.id].note || '(нет)'}`;
+      })
+      .join('\n\n');
+    saveFile('flags-1c-trainer.txt', text, 'text/plain;charset=utf-8');
   }
 
   // --- утилиты DOM ---
@@ -233,7 +326,8 @@
     question: null,
     selected: [],
     answered: false,
-    entries: [], // entries[i] — состояние i-го вопроса очереди: { selected, answered, ok }
+    label: '', // подпись круга в шапке: «перерешивание ошибок», «пропущенные вопросы»
+    entries: [], // entries[i] — состояние i-го вопроса очереди: { selected, answered, ok, order }
     wrong: [], // вопросы, отвеченные неверно в этом круге, — для «Перерешать ошибки»
     answeredIds: new Set(),
     stats: { answers: 0, correct: 0, wrong: 0 },
@@ -273,6 +367,7 @@
           el('h1', { text: `${totals.total} ${plural(totals.total, 'вопрос', 'вопроса', 'вопросов')} в банке` }),
           el('div', { class: 'stats' }, [
             el('div', { class: 'stat-chip ok' }, [el('b', { text: String(totals.known) }), 'изучено']),
+            el('div', { class: 'stat-chip' }, [el('b', { text: String(totals.learning) }), 'в работе']),
             el('div', { class: 'stat-chip bad' }, [el('b', { text: String(totals.errors) }), 'с ошибками']),
             el('div', { class: 'stat-chip' }, [el('b', { text: String(totals.untouched) }), 'не начато']),
           ]),
@@ -284,9 +379,17 @@
       ]),
     );
 
+    const resumeCard = renderResumeCard();
+    if (resumeCard) root.appendChild(resumeCard);
+    root.appendChild(renderDailyCard());
+
     root.appendChild(renderExamCard());
 
+    root.appendChild(renderForecastCard());
+
     root.appendChild(renderFavoritesCard());
+    const flagsCard = renderFlagsCard();
+    if (flagsCard) root.appendChild(flagsCard);
 
     root.appendChild(el('h2', { class: 'section-title', text: 'Темы' }));
     const list = el('div', { class: 'categories' });
@@ -315,7 +418,7 @@
         summary.untouched > 0 &&
           el(
             'button',
-            { class: 'small', onclick: () => startSession(category.id, 'unknown') },
+            { class: 'small', onclick: () => startSession(category.id, 'new') },
             `Новые ${summary.untouched}`,
           ),
       ]);
@@ -341,14 +444,11 @@
       if (!window.confirm('Сбросить весь прогресс? Это действие нельзя отменить.')) return;
       progress = Core.emptyProgress();
       saveProgress(progress);
+      writeJson(SESSION_KEY, null);
       renderHome();
     };
     const exportProgress = () => {
-      const blob = new Blob([JSON.stringify({ ...progress, favorites }, null, 2)], { type: 'application/json' });
-      const link = el('a', { href: URL.createObjectURL(blob), download: 'progress-1c-trainer.json' });
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      saveFile('progress-1c-trainer.json', JSON.stringify({ ...progress, favorites, flags }, null, 2), 'application/json');
     };
     const importProgress = () => {
       const input = el('input', { type: 'file', accept: '.json,application/json', style: 'display:none' });
@@ -364,6 +464,10 @@
             if (parsed && Array.isArray(parsed.favorites)) {
               favorites = Core.normalizeFavorites(parsed.favorites, questionById);
               saveFavorites();
+            }
+            if (parsed && parsed.flags) {
+              flags = Core.normalizeFlags(parsed.flags, questionById);
+              saveFlags();
             }
             renderHome();
           } catch (error) {
@@ -402,6 +506,111 @@
     );
   }
 
+  function renderResumeCard() {
+    const saved = loadSavedSession();
+    if (!saved) return null;
+    const category = categoryById.get(saved.categoryId);
+    const done = saved.entries.filter((e) => e.answered).length;
+    const total = saved.queue.length;
+    return el('div', { class: 'card category home-card resume-card' }, [
+      el('div', {}, [
+        el('div', { class: 'category__title', text: 'Незавершённый круг' }),
+        el('div', { class: 'category__meta', text: `${category.title} · отвечено ${done} из ${total}` }),
+      ]),
+      el('div', { class: 'category__actions' }, [
+        el('button', { class: 'primary small', onclick: resumeSession }, 'Продолжить'),
+        el('button', { class: 'small ghost', onclick: () => { writeJson(SESSION_KEY, null); renderHome(); } }, 'Сбросить'),
+      ]),
+    ]);
+  }
+
+  function renderDailyCard() {
+    const { queue, counts } = Core.buildDaily(DATA.questions, progress);
+    const today = Core.answeredToday(progress);
+    const parts = [
+      counts.errors > 0 && `ошибок ${counts.errors}`,
+      counts.due > 0 && `повторить ${counts.due}`,
+      counts.fresh > 0 && `новых ${counts.fresh}`,
+    ].filter(Boolean);
+    const met = today >= Core.DAILY.limit;
+    return el('div', { class: 'card category home-card daily-card' }, [
+      el('div', {}, [
+        el('div', { class: 'category__title', text: 'На сегодня' }),
+        el('div', { class: 'category__meta' }, [
+          queue.length ? `${queue.length} ${plural(queue.length, 'вопрос', 'вопроса', 'вопросов')} из всех тем: ${parts.join(', ')}` : 'На сегодня вопросов больше нет.',
+          today > 0 && ` · сегодня решено ${today}`,
+          met && ' · норма выполнена',
+        ]),
+      ]),
+      queue.length > 0 &&
+        el('div', { class: 'category__actions' }, [
+          el('button', { class: met ? 'small' : 'primary small', onclick: () => startSession(DAILY_ID, 'daily') }, met ? 'Ещё подборка' : 'Начать'),
+        ]),
+    ]);
+  }
+
+  function forecastRow(topic) {
+    const percent = Math.round(topic.chance * 100);
+    return el('div', { class: 'forecast__row' }, [
+      el('div', { class: 'grow' }, [
+        el('div', { class: 'forecast__title', text: topic.title }),
+        el('div', {
+          class: 'category__meta',
+          text: topic.accuracy === null
+            ? 'ещё не решали'
+            : `верных ${Math.round(topic.accuracy * 100)}% из ${topic.attempts} ${plural(topic.attempts, 'ответа', 'ответов', 'ответов')}`,
+        }),
+      ]),
+      el('div', { class: 'row' }, [
+        el('b', { class: 'forecast__percent', text: `${percent}%` }),
+        topic.notKnown > 0 &&
+          el('button', { class: 'small', title: 'Вопросы темы, кроме изученных', onclick: () => startSession(topic.id, 'unknown') }, 'Тренировать'),
+      ]),
+      el('div', { class: 'bar brand' }, [el('i', { style: `width:${percent}%` })]),
+    ]);
+  }
+
+  function renderForecastCard() {
+    const result = Core.forecast(DATA.categories, questionsByCategory, progress);
+    const count = result.topics.length;
+    const need = Core.passScoreFor(count);
+    return el('section', { class: 'card home-card forecast' }, [
+      el('h2', { text: 'Прогноз экзамена' }),
+      el('div', { class: 'forecast__head' }, [
+        el('b', { class: 'forecast__score', text: `≈ ${Math.round(result.pass * 100)}%` }),
+        el('div', { class: 'muted' }, [
+          `шанс набрать ${need} из ${count}. Ожидаемо верных: ${result.expected.toFixed(1).replace('.', ',')}.`,
+        ]),
+      ]),
+      el('div', { class: 'forecast__label', text: 'Самые слабые темы' }),
+      ...result.topics.slice(0, 3).map(forecastRow),
+      count > 3 &&
+        el('details', { class: 'forecast__more' }, [
+          el('summary', { text: 'Все темы' }),
+          ...result.topics.slice(3).map(forecastRow),
+        ]),
+      el('p', {
+        class: 'muted forecast__note',
+        text: 'Оценка примерная: она считается по статусам ваших вопросов (изучен, в работе, с ошибкой, не начат), а не по результатам настоящих экзаменов.',
+      }),
+    ]);
+  }
+
+  function renderFlagsCard() {
+    const count = questionsOf(FLAGS_ID).length;
+    if (!count) return null;
+    return el('div', { class: 'card category home-card' }, [
+      el('div', {}, [
+        el('div', { class: 'category__title' }, [el('span', { class: 'flag-mark', 'aria-hidden': 'true', text: '⚑ ' }), 'Вопросы с пометкой']),
+        el('div', { class: 'category__meta', text: `${count} ${plural(count, 'вопрос', 'вопроса', 'вопросов')}, где вы заметили ошибку` }),
+      ]),
+      el('div', { class: 'category__actions' }, [
+        el('button', { class: 'small', onclick: () => renderBrowse(FLAGS_ID) }, 'Список'),
+        el('button', { class: 'small', onclick: downloadFlagsReport }, 'Скачать список'),
+      ]),
+    ]);
+  }
+
   function renderFavoritesCard() {
     const list = questionsOf(FAVORITES_ID);
     const count = list.length;
@@ -435,26 +644,32 @@
   /**
    * Один круг по вопросам: каждый вопрос показывается ровно один раз, ошибки
    * в очередь не возвращаются. Перерешать их можно с экрана итогов.
-   * retryList — явный список вопросов (ошибки прошлого круга).
+   * list — явный список вопросов (ошибки или пропущенные прошлого круга), label — подпись такого круга.
    */
-  function startSession(categoryId, mode, retryList) {
-    const queue = retryList ? Core.shuffle(retryList) : Core.buildQueue(questionsOf(categoryId), progress, mode);
+  function startSession(categoryId, mode, list, label) {
+    const queue = list
+      ? Core.shuffle(list)
+      : mode === 'daily'
+        ? Core.buildDaily(DATA.questions, progress).queue
+        : Core.buildQueue(questionsOf(categoryId), progress, mode);
     if (!queue.length) {
       window.alert(
         mode === 'errors'
           ? 'Здесь пока нет вопросов с ошибками.'
-          : categoryId === FAVORITES_ID
-            ? 'В избранном пока нет вопросов.'
-            : 'В этой теме нет вопросов.',
+          : mode === 'daily'
+            ? 'На сегодня вопросов больше нет.'
+            : categoryId === FAVORITES_ID
+              ? 'В избранном пока нет вопросов.'
+              : 'Подходящих вопросов нет.',
       );
       return;
     }
     session.categoryId = categoryId;
     session.queue = queue;
     session.pos = 0;
-    session.entries = queue.map(() => ({ selected: [], answered: false, ok: false }));
+    session.entries = queue.map((q) => ({ selected: [], answered: false, ok: false, order: Core.shuffleOrder(q) }));
     session.wrong = [];
-    session.round = retryList ? (session.round || 1) + 1 : 1;
+    session.label = label || '';
     session.answeredIds = new Set();
     session.stats = { answers: 0, correct: 0, wrong: 0 };
     showQuestion();
@@ -465,7 +680,55 @@
     session.question = session.queue[session.pos];
     session.selected = entry.selected; // тот же массив: отметки многоответного вопроса переживают листание
     session.answered = entry.answered;
+    persistSession();
     renderSession();
+  }
+
+  function persistSession() {
+    writeJson(SESSION_KEY, {
+      categoryId: session.categoryId,
+      label: session.label,
+      ids: session.queue.map((q) => q.id),
+      pos: session.pos,
+      entries: session.entries,
+    });
+  }
+
+  /** Сохранённый круг. Пустой (ничего не отвечено, первый вопрос) и устаревший не восстанавливаем. */
+  function loadSavedSession() {
+    const saved = readJson(SESSION_KEY);
+    if (!saved || !Array.isArray(saved.ids) || !saved.ids.length || !categoryById.has(saved.categoryId)) return null;
+    const queue = saved.ids.map((id) => questionById.get(id));
+    if (queue.some((q) => !q) || !Array.isArray(saved.entries) || saved.entries.length !== queue.length) return null;
+    const entries = saved.entries.map((e, i) => ({
+      selected: e && Array.isArray(e.selected) ? e.selected : [],
+      answered: Boolean(e && e.answered),
+      ok: Boolean(e && e.ok),
+      order: Core.normalizeOrder(e && e.order, queue[i].options.length),
+    }));
+    const pos = Math.min(Math.max(0, Number(saved.pos) || 0), queue.length - 1);
+    if (pos === 0 && !entries.some((e) => e.answered)) return null;
+    return { categoryId: saved.categoryId, label: saved.label || '', queue, entries, pos };
+  }
+
+  function resumeSession() {
+    const saved = loadSavedSession();
+    if (!saved) {
+      renderHome();
+      return;
+    }
+    const answered = saved.entries.filter((e) => e.answered);
+    Object.assign(session, saved, {
+      answeredIds: new Set(saved.queue.filter((_, i) => saved.entries[i].answered).map((q) => q.id)),
+      wrong: saved.queue.filter((_, i) => saved.entries[i].answered && !saved.entries[i].ok),
+      stats: {
+        answers: answered.length,
+        correct: answered.filter((e) => e.ok).length,
+        wrong: answered.filter((e) => !e.ok).length,
+      },
+    });
+    showQuestion();
+    window.scrollTo(0, 0);
   }
 
   /** Листание внутри круга. Отвеченный вопрос открывается с ответом и второй раз не засчитывается. */
@@ -511,7 +774,7 @@
         el('div', { class: 'grow' }, [
           el('div', { class: 'category__title', text: categoryTitle() }),
           el('div', { class: 'session__meta' }, [
-            session.round > 1 && el('span', { text: 'перерешивание ошибок' }),
+            session.label && el('span', { text: session.label }),
             el('span', { text: `Вопрос ${session.pos + 1} из ${total}` }),
             remainingEl,
             statsEl,
@@ -529,10 +792,13 @@
     root.appendChild(banner);
 
     const card = el('div', { class: 'card' }, []);
+    if (session.categoryId === DAILY_ID || session.categoryId === FAVORITES_ID) {
+      card.appendChild(el('div', { class: 'question__note', text: question.categoryTitle }));
+    }
     card.appendChild(
       el('div', { class: 'question__head' }, [
         el('div', { class: 'question', text: question.text }),
-        favoriteButton(question),
+        questionTools(question),
       ]),
     );
     const figure = questionImage(question);
@@ -548,8 +814,8 @@
     }
 
     const options = el('div', { class: 'options', id: 'options' }, []);
-    question.options.forEach((option, index) => {
-      const key = String.fromCharCode(1040 + index).toLowerCase(); // а, б, в, …
+    session.entries[session.pos].order.forEach((index, shown) => {
+      const option = question.options[index];
       const button = el(
         'button',
         {
@@ -560,7 +826,7 @@
           onclick: () => onOptionClick(index),
         },
         [
-          el('span', { class: 'option__key', text: String(index + 1) }),
+          el('span', { class: 'option__key', text: String(shown + 1) }),
           el('span', { class: 'option__text', text: option.text }),
         ],
       );
@@ -618,6 +884,7 @@
       if (at >= 0) session.selected.splice(at, 1);
       else session.selected.push(index);
       renderSelectionState();
+      persistSession();
       return;
     }
     session.selected = [index];
@@ -653,6 +920,7 @@
 
     session.answeredIds.add(question.id);
     if (!isCorrect) session.wrong.push(question);
+    persistSession();
 
     paintAnswered(question, isCorrect);
     updateSessionMeta();
@@ -689,6 +957,7 @@
   }
 
   function onKeyDown(event) {
+    if (document.querySelector('dialog[open]')) return; // Esc и ввод текста обрабатывает сам диалог
     if (lightbox) {
       if (event.key === 'Escape' || event.key === 'Enter') {
         event.preventDefault();
@@ -744,7 +1013,7 @@
       const index = digit - 1;
       if (index < question.options.length) {
         event.preventDefault();
-        onOptionClick(index);
+        onOptionClick(session.entries[session.pos].order[index]);
       }
     }
   }
@@ -752,6 +1021,35 @@
   // Единственный обработчик клавиатуры на всё приложение: он сам понимает,
   // на каком экране находится пользователь.
   document.addEventListener('keydown', onKeyDown);
+
+  // Свайп влево и вправо листает вопросы в тренировке и на экзамене.
+  const SWIPE_MIN_PX = 70;
+  let touchStart = null;
+
+  function insideHorizontalScroll(node) {
+    for (let n = node; n && n !== root; n = n.parentElement) {
+      if (n.scrollWidth > n.clientWidth + 1 && /auto|scroll/.test(getComputedStyle(n).overflowX)) return true;
+    }
+    return false;
+  }
+
+  root.addEventListener('touchstart', (event) => {
+    const t = event.touches[0];
+    touchStart = event.touches.length === 1 ? { x: t.clientX, y: t.clientY, target: event.target } : null;
+  }, { passive: true });
+
+  root.addEventListener('touchend', (event) => {
+    if (!touchStart) return;
+    const start = touchStart;
+    touchStart = null;
+    const t = event.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) < SWIPE_MIN_PX || Math.abs(dy) > Math.abs(dx) / 2 || insideHorizontalScroll(start.target)) return;
+    const step = dx < 0 ? 1 : -1;
+    if (exam.active) goToExamQuestion(exam.pos + step);
+    else if (session.question && document.getElementById('action')) goToQuestion(session.pos + step);
+  }, { passive: true });
 
   function exitSession() {
     session.question = null;
@@ -765,7 +1063,9 @@
     const stats = session.stats;
     const answered = stats.correct + stats.wrong;
     const percent = answered ? Math.round((stats.correct / answered) * 100) : 0;
-    const skipped = session.queue.length - session.answeredIds.size;
+    const skippedList = session.queue.filter((_, i) => !session.entries[i].answered);
+    const skipped = skippedList.length;
+    writeJson(SESSION_KEY, null);
 
     root.appendChild(
       el('div', { class: 'top' }, [
@@ -794,21 +1094,24 @@
     root.appendChild(card);
 
     const wrong = session.wrong.slice();
-    const retry = () => startSession(session.categoryId, 'all', wrong);
+    const retry = () => startSession(session.categoryId, 'all', wrong, 'перерешивание ошибок');
+    const isDaily = session.categoryId === DAILY_ID;
 
     const summary = Core.progressFor(questionsOf(session.categoryId), progress);
     root.appendChild(
       el('p', { class: 'muted', style: 'margin-top:12px' }, [
-        `${session.categoryId === FAVORITES_ID ? 'В избранном' : `В теме «${categoryTitle()}»`} изучено ${summary.known} из ${summary.total} (${summary.percent}%), с ошибками ${summary.errors}.`,
+        `${session.categoryId === FAVORITES_ID ? 'В избранном' : isDaily ? 'Во всём банке' : `В теме «${categoryTitle()}»`} изучено ${summary.known} из ${summary.total} (${summary.percent}%), с ошибками ${summary.errors}.`,
       ]),
     );
 
     const foot = el('div', { class: 'toolbar' }, [
       wrong.length > 0 && el('button', { class: 'primary', onclick: retry }, `Перерешать ошибки (${wrong.length})`),
+      skipped > 0 &&
+        el('button', { onclick: () => startSession(session.categoryId, 'all', skippedList, 'пропущенные вопросы') }, `Решить пропущенные (${skipped})`),
       // все ошибки темы, включая прошлые сессии, — если их больше, чем в этом круге
       summary.errors > wrong.length &&
         el('button', { onclick: () => startSession(session.categoryId, 'errors') }, `Все ошибки (${summary.errors})`),
-      el('button', { onclick: () => startSession(session.categoryId, 'all') }, 'Пройти заново'),
+      el('button', { onclick: () => startSession(session.categoryId, isDaily ? 'daily' : 'all') }, isDaily ? 'Ещё подборка' : 'Пройти заново'),
       el('button', { class: 'ghost', onclick: renderHome }, 'К списку тем'),
     ]);
     root.appendChild(foot);
@@ -818,11 +1121,12 @@
       const list = el('div', { class: 'categories' });
       for (const question of wrong) {
         const options = el('div', { class: 'options locked' });
+        const order = session.entries[session.queue.indexOf(question)].order;
         question.options.forEach((option, index) => {
           if (!option.correct) return;
           options.appendChild(
             el('div', { class: 'option is-correct' }, [
-              el('span', { class: 'option__key', text: String(index + 1) }),
+              el('span', { class: 'option__key', text: String(order.indexOf(index) + 1) }),
               el('span', { class: 'option__text', text: option.text }),
             ]),
           );
@@ -831,7 +1135,7 @@
           el('div', { class: 'card' }, [
             el('div', { class: 'question__head' }, [
               el('div', { class: 'question', text: question.text }),
-              favoriteButton(question),
+              questionTools(question),
             ]),
             questionImage(question),
             options,
@@ -875,7 +1179,9 @@
         el('div', { class: 'row' }, [
           GUIDES[categoryId] &&
             el('button', { class: 'small', onclick: () => renderGuide(categoryId) }, 'Разбор'),
-          el('button', { class: 'small', onclick: () => { browse.active = false; startSession(categoryId, 'all'); } }, 'Повторять'),
+          categoryId === FLAGS_ID
+            ? el('button', { class: 'small', onclick: downloadFlagsReport }, 'Скачать список')
+            : el('button', { class: 'small', onclick: () => { browse.active = false; startSession(categoryId, 'all'); } }, 'Повторять'),
           el('button', { class: 'ghost small', onclick: leaveBrowse, title: 'К списку тем (Esc)' }, 'Назад'),
         ]),
       ]),
@@ -922,7 +1228,7 @@
         list.appendChild(
           el('div', {
             class: 'card empty',
-            text: questions.length ? 'Ничего не найдено.' : 'В избранном пока нет вопросов.',
+            text: questions.length ? 'Ничего не найдено.' : categoryId === FLAGS_ID ? 'Пометок больше нет.' : 'В избранном пока нет вопросов.',
           }),
         );
         return;
@@ -946,12 +1252,13 @@
               el('div', {
                 class: 'question__note',
                 style: 'margin:0',
-                text: categoryId === FAVORITES_ID ? question.categoryTitle : `Вопрос ${number}`,
+                text: categoryId === FAVORITES_ID || categoryId === FLAGS_ID ? question.categoryTitle : `Вопрос ${number}`,
               }),
               el('div', { class: 'row' }, [
                 status === 'known' && el('span', { class: 'pill ok', text: 'Изучен' }),
+                status === 'learning' && el('span', { class: 'pill', text: 'В работе' }),
                 status === 'error' && el('span', { class: 'pill bad', text: 'С ошибкой' }),
-                favoriteButton(question),
+                questionTools(question),
               ]),
             ]),
             el('div', { class: 'question', text: question.text }),
@@ -960,6 +1267,8 @@
               el('div', { class: 'question__note', text: '(помечен для проверки: формулировка могла распознаться не полностью)' }),
             options,
             explanationBlock(question),
+            categoryId === FLAGS_ID && flags[question.id].note &&
+              el('div', { class: 'explain explain--hint' }, [el('b', { text: 'Заметка. ' }), flags[question.id].note]),
           ]),
         );
       }
@@ -1018,6 +1327,7 @@
     active: false,
     questions: [],
     answers: [], // answers[i] — выбранные индексы вариантов
+    orders: [], // orders[i] — порядок показа вариантов i-го вопроса
     pos: 0,
     startedAt: 0,
     deadline: 0,
@@ -1055,6 +1365,7 @@
     return {
       questions,
       answers: Array.isArray(saved.answers) ? saved.answers.map((a) => (Array.isArray(a) ? a : [])) : [],
+      orders: questions.map((q, i) => Core.normalizeOrder(saved.orders && saved.orders[i], q.options.length)),
       pos: Number(saved.pos) || 0,
       startedAt: Number(saved.startedAt) || Date.now(),
       deadline: Number(saved.deadline) || Date.now(),
@@ -1065,6 +1376,7 @@
     writeJson(EXAM_KEY, {
       ids: exam.questions.map((q) => q.id),
       answers: exam.answers,
+      orders: exam.orders,
       pos: exam.pos,
       startedAt: exam.startedAt,
       deadline: exam.deadline,
@@ -1145,6 +1457,7 @@
     }
     exam.questions = questions;
     exam.answers = questions.map(() => []);
+    exam.orders = questions.map((q) => Core.shuffleOrder(q));
     exam.pos = 0;
     exam.startedAt = Date.now();
     exam.deadline = exam.startedAt + Core.EXAM.durationSec * 1000;
@@ -1253,7 +1566,8 @@
         el('div', { class: 'question__note', text: 'Несколько правильных вариантов — отметьте все.' }),
     ]);
     const options = el('div', { class: 'options' });
-    question.options.forEach((option, index) => {
+    exam.orders[exam.pos].forEach((index, shown) => {
+      const option = question.options[index];
       const picked = selected.includes(index);
       options.appendChild(
         el(
@@ -1265,7 +1579,7 @@
             onclick: () => toggleExamOption(index),
           },
           [
-            el('span', { class: 'option__key', text: String(index + 1) }),
+            el('span', { class: 'option__key', text: String(shown + 1) }),
             el('span', { class: 'option__text', text: option.text }),
           ],
         ),
@@ -1405,14 +1719,15 @@
       const correct = Core.correctIndexes(question);
       const status = item.ok ? 'Верно' : item.answered ? 'Неверно' : 'Без ответа';
       const options = el('div', { class: 'options locked' });
-      question.options.forEach((option, index) => {
+      exam.orders[i].forEach((index, shown) => {
+        const option = question.options[index];
         const chosen = item.selected.includes(index);
         let cls = 'option';
         if (correct.includes(index)) cls += ' is-correct';
         else if (chosen) cls += ' is-chosen-wrong';
         options.appendChild(
           el('div', { class: cls }, [
-            el('span', { class: 'option__key', text: String(index + 1) }),
+            el('span', { class: 'option__key', text: String(shown + 1) }),
             el('span', { class: 'option__text', text: option.text }),
           ]),
         );
@@ -1423,7 +1738,7 @@
             el('div', { class: 'question__note', style: 'margin:0', text: `${i + 1}. ${question.categoryTitle}` }),
             el('div', { class: 'row' }, [
               el('span', { class: `pill ${item.ok ? 'ok' : 'bad'}`, text: status }),
-              favoriteButton(question),
+              questionTools(question),
             ]),
           ]),
           el('div', { class: 'question', text: question.text }),
@@ -1457,7 +1772,7 @@
       const question = exam.questions[exam.pos];
       if (digit - 1 < question.options.length) {
         event.preventDefault();
-        toggleExamOption(digit - 1);
+        toggleExamOption(exam.orders[exam.pos][digit - 1]);
       }
     }
   }
